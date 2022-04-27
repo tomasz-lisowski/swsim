@@ -4,3 +4,6 @@
 [submodule "lib/uicc"]
 	path = lib/uicc
 	url = https://github.com/tomasz-lisowski/libuicc.git
+[submodule "lib/scraw"]
+	path = lib/scraw
+	url = https://github.com/tomasz-lisowski/libscraw.git
