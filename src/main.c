@@ -11,7 +11,7 @@
  */
 static void usage()
 {
-    printf("Usage: softsim port\n");
+    printf("Usage: swsim port\n");
 }
 
 int32_t main(int32_t const argc,

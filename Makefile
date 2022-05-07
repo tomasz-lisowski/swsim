@@ -6,7 +6,7 @@ DIR_BUILD:=build
 DIR_BUILD_LIB:=build-lib
 CC:=gcc
 
-MAIN_NAME:=softsim
+MAIN_NAME:=swsim
 MAIN_SRC:=$(wildcard $(DIR_SRC)/*.c)
 MAIN_OBJ:=$(MAIN_SRC:$(DIR_SRC)/%.c=$(DIR_BUILD)/%.o)
 MAIN_DEP:=$(MAIN_OBJ:%.o=%.d)
@@ -23,7 +23,7 @@ all-dbg: MAIN_CC_FLAGS+=-g -DDEBUG
 all-dbg: main
 all-lib: uicc scraw
 
-# Build softsim.
+# Build swsim.
 main: $(DIR_BUILD) $(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN)
 $(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN): $(MAIN_OBJ)
 	$(CC) $(^) -o $(@) $(MAIN_CC_FLAGS) $(MAIN_LD_FLAGS)
