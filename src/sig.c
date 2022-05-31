@@ -22,7 +22,7 @@ int32_t sig_exit_handler_register()
     action_new.sa_handler = sig_exit_handler;
     if (sigemptyset(&action_new.sa_mask) != 0)
     {
-        printf("Call to sigemptyset() failed: %s\n", strerror(errno));
+        printf("Call to sigemptyset() failed: %s.\n", strerror(errno));
         return -1;
     }
     action_new.sa_flags = 0;

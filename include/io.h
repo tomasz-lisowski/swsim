@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <uicc.h>
+#include <uicc/uicc.h>
 
 typedef struct msg_hdr_s
 {
@@ -11,7 +11,15 @@ typedef struct msg_hdr_s
 typedef struct msg_data_s
 {
     uint32_t cont_state;
-    uint8_t tpdu[UICC_DATA_MAX];
+
+    /**
+     * When sent to SWSIM, this is unused, when being received by a client, this
+     * indicates how many bytes to read from the interface (i.e. the expected
+     * buffer length).
+     */
+    uint32_t buf_len_exp;
+
+    uint8_t buf[UICC_DATA_MAX];
 } __attribute__((packed)) msg_data_st;
 
 /**
@@ -36,9 +44,11 @@ int32_t io_init(char const *const port_str);
 /**
  * @brief Receive a message.
  * @param msg Where the received message will be written.
+ * @param init If the message contains some data that should be sent before
+ * receiving.
  * @return 0 on success, 1 if a retry is needed, -1 on failure.
  */
-int32_t io_recv(msg_st *const msg);
+int32_t io_recv(msg_st *const msg, bool const init);
 
 /**
  * @brief Send a message.
