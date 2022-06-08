@@ -34,7 +34,7 @@ typedef struct msg_s
 } __attribute__((packed)) msg_st;
 
 /**
- * @brief Initialize IO before receiving data for USIM.
+ * @brief Initialize IO before receiving data for SIM.
  * @param port_str Port that clients will be able to connect to for sending
  * data.
  * @return 0 on success, -1 on failure.

@@ -7,8 +7,8 @@
 /* If the pass-through to a real SIM should be done for unknown commands. */
 #define SIM_PASSTHROUGH 0U
 
-/* Hold state of USIM. */
-typedef struct usim_st
+/* Hold state of SIM. */
+typedef struct sim_st
 {
     struct internal_s
     {
@@ -20,15 +20,15 @@ typedef struct usim_st
     char *dbg_str;
     uint16_t dbg_str_len;
     uint16_t dbg_str_size;
-} usim_st;
+} sim_st;
 
 /**
- * @brief Initialize the state of the USIM (excluding the non-internal buffers
+ * @brief Initialize the state of the SIM (excluding the non-internal buffers
  * that have to be set before calling this function).
  * @param state This will be initialized.
  * @return 0 on success, -1 on failure.
  */
-int32_t usim_init(usim_st *const state);
+int32_t sim_init(sim_st *const state);
 
 /**
  * @brief A mock init simulates activation, cold reset, and protocol and
@@ -39,7 +39,7 @@ int32_t usim_init(usim_st *const state);
  * @note This means some default values for Fi, Di, and f(max) are selected and
  * the active protocol becomes T=0.
  */
-int32_t usim_init_mock(usim_st *const state);
+int32_t sim_init_mock(sim_st *const state);
 
 /**
  * @brief Handles a raw TPDU message coming from the interface.
@@ -47,4 +47,4 @@ int32_t usim_init_mock(usim_st *const state);
  * newest values) by the caller before calling this function.
  * @return 0 on success, -1 on failure.
  */
-int32_t usim_io(usim_st *const state);
+int32_t sim_io(sim_st *const state);

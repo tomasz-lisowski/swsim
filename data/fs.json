@@ -2,12 +2,17 @@
     "disk": [
         {
             "type": "file_mf",
-            "name": "MF",
+            "name": {
+                "type": "ascii",
+                "contents": "MF"
+            },
             "id": "3F00",
             "contents": [
                 {
+                    "meta": {
+                        "name": "DIR"
+                    },
                     "type": "file_ef_linear-fixed",
-                    "name": "DIR",
                     "id": "2F00",
                     "sid": "1E",
                     "rcrd_size": 64,
@@ -40,8 +45,10 @@
                     ]
                 },
                 {
+                    "meta": {
+                        "name": "ICCID"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "ICCID",
                     "id": "2FE2",
                     "sid": "02",
                     "contents": {
@@ -50,8 +57,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "PL"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "PL",
                     "id": "2F05",
                     "sid": "05",
                     "contents": {
@@ -60,8 +69,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "UMPC"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "UMPC",
                     "id": "2F08",
                     "sid": "08",
                     "contents": {
@@ -71,18 +82,26 @@
                 },
                 {
                     "type": "file_df",
-                    "name": "TELECOM",
+                    "name": {
+                        "type": "ascii",
+                        "contents": "TELECOM"
+                    },
                     "contents": [
                         {
+                            "meta": {
+                                "name": "ARR"
+                            },
                             "type": "file_ef_linear-fixed",
-                            "name": "ARR",
                             "id": "6F06",
                             "rcrd_size": 16,
                             "contents": []
                         },
                         {
                             "type": "file_df",
-                            "name": "PHONEBOOK",
+                            "name": {
+                                "type": "ascii",
+                                "contents": "PHONEBOOK"
+                            },
                             "id": "5F3A",
                             "contents": []
                         }
@@ -92,12 +111,16 @@
         },
         {
             "type": "file_adf",
-            "name": "USIM",
-            "aid": "A000000000870001",
+            "name": {
+                "type": "hex",
+                "contents": "A000000000870001"
+            },
             "contents": [
                 {
+                    "meta": {
+                        "name": "IMSI"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "IMSI",
                     "id": "6F07",
                     "sid": "07",
                     "contents": {
@@ -106,8 +129,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "Keys"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "Keys",
                     "id": "6F08",
                     "sid": "08",
                     "contents": {
@@ -116,8 +141,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "KeysPS"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "KeysPS",
                     "id": "6F09",
                     "sid": "09",
                     "contents": {
@@ -126,8 +153,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "HPPLMN"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "HPPLMN",
                     "id": "6F31",
                     "sid": "12",
                     "contents": {
@@ -136,8 +165,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "UST"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "UST",
                     "id": "6F38",
                     "sid": "04",
                     "contents": {
@@ -146,8 +177,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "ACC"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "ACC",
                     "id": "6F78",
                     "sid": "06",
                     "contents": {
@@ -156,8 +189,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "FPLMN"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "FPLMN",
                     "id": "6F7B",
                     "sid": "0D",
                     "contents": {
@@ -166,8 +201,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "LOCI"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "LOCI",
                     "id": "6F7E",
                     "sid": "0B",
                     "contents": {
@@ -176,8 +213,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "AD"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "AD",
                     "id": "6FAD",
                     "sid": "03",
                     "contents": {
@@ -186,8 +225,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "ECC"
+                    },
                     "type": "file_ef_linear-fixed",
-                    "name": "ECC",
                     "id": "6FB7",
                     "sid": "01",
                     "rcrd_size": 4,
@@ -199,8 +240,10 @@
                     ]
                 },
                 {
+                    "meta": {
+                        "name": "PSLOCI"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "PSLOCI",
                     "id": "6F73",
                     "sid": "0C",
                     "contents": {
@@ -209,8 +252,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "START-HFN"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "START-HFN",
                     "id": "6F5B",
                     "sid": "0F",
                     "contents": {
@@ -219,8 +264,10 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "THRESHOLD"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "THRESHOLD",
                     "id": "6F5C",
                     "sid": "10",
                     "contents": {
@@ -229,16 +276,20 @@
                     }
                 },
                 {
+                    "meta": {
+                        "name": "ARR"
+                    },
                     "type": "file_ef_linear-fixed",
-                    "name": "ARR",
                     "id": "6F06",
                     "sid": "17",
                     "rcrd_size": 16,
                     "contents": []
                 },
                 {
+                    "meta": {
+                        "name": "NETPAR"
+                    },
                     "type": "file_ef_transparent",
-                    "name": "NETPAR",
                     "id": "6FC4",
                     "contents": null
                 }

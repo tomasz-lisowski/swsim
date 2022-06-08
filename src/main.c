@@ -1,6 +1,6 @@
 #include "io.h"
 #include "sig.h"
-#include "usim.h"
+#include "sim.h"
 #include <signal.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -37,25 +37,25 @@ int32_t main(int32_t const argc,
     {
         msg_st msg_rx;
         msg_st msg_tx;
-        usim_st usim = {0};
+        sim_st sim = {0};
 
-        usim.dbg_str_size = DBG_STR_LEN;
-        usim.dbg_str_len = usim.dbg_str_size;
+        sim.dbg_str_size = DBG_STR_LEN;
+        sim.dbg_str_len = sim.dbg_str_size;
 #ifdef DEBUG
         char dbg_str[DBG_STR_LEN];
-        usim.dbg_str = dbg_str;
+        sim.dbg_str = dbg_str;
 #else
-        usim.dbg_str = NULL;
+        sim.dbg_str = NULL;
 #endif
 
-        usim.uicc.buf_rx = msg_rx.data.buf;
-        usim.uicc.buf_rx_len = 0U;
-        usim.uicc.buf_tx = msg_tx.data.buf;
-        usim.uicc.buf_tx_len = sizeof(msg_tx.data.buf);
+        sim.uicc.buf_rx = msg_rx.data.buf;
+        sim.uicc.buf_rx_len = 0U;
+        sim.uicc.buf_tx = msg_tx.data.buf;
+        sim.uicc.buf_tx_len = sizeof(msg_tx.data.buf);
 
-        if (usim_init(&usim) != 0)
+        if (sim_init(&sim) != 0)
         {
-            printf("Failed to init USIM.\n");
+            printf("Failed to init sim.\n");
             if (raise(SIGTERM) != 0)
             {
                 return -1;
@@ -64,7 +64,7 @@ int32_t main(int32_t const argc,
 
         int32_t recv_ret = -1;
         /* When a client connects, send it an init message. */
-        msg_rx.data.buf_len_exp = usim.uicc.buf_rx_len;
+        msg_rx.data.buf_len_exp = sim.uicc.buf_rx_len;
         msg_rx.data.cont_state = 0U;
         msg_rx.hdr.size = offsetof(msg_data_st, buf);
         bool init = true;
@@ -80,15 +80,15 @@ int32_t main(int32_t const argc,
                     msg_rx.hdr.size - (uint8_t)offsetof(msg_data_st, buf);
                 if (buf_rx_len <= UINT16_MAX)
                 {
-                    usim.uicc.buf_rx = msg_rx.data.buf;
-                    usim.uicc.buf_rx_len = (uint16_t)
+                    sim.uicc.buf_rx = msg_rx.data.buf;
+                    sim.uicc.buf_rx_len = (uint16_t)
                         buf_rx_len; /* Safe cast due to bound check. */
-                    usim.uicc.buf_tx = msg_tx.data.buf;
-                    usim.uicc.buf_tx_len = sizeof(msg_tx.data.buf);
-                    if (usim_io(&usim) == 0)
+                    sim.uicc.buf_tx = msg_tx.data.buf;
+                    sim.uicc.buf_tx_len = sizeof(msg_tx.data.buf);
+                    if (sim_io(&sim) == 0)
                     {
                         if (sizeof(msg_tx.data.cont_state) +
-                                usim.uicc.buf_tx_len >
+                                sim.uicc.buf_tx_len >
                             UINT32_MAX)
                         {
                             break;
@@ -97,11 +97,11 @@ int32_t main(int32_t const argc,
                         msg_tx.hdr.size =
                             (uint32_t)(sizeof(msg_tx.data.cont_state) +
                                        sizeof(msg_tx.data.buf_len_exp) +
-                                       usim.uicc.buf_tx_len);
+                                       sim.uicc.buf_tx_len);
                         msg_tx.data.cont_state = 0U;
-                        msg_tx.data.buf_len_exp = usim.uicc.buf_rx_len;
-                        memcpy(msg_tx.data.buf, usim.uicc.buf_tx,
-                               usim.uicc.buf_tx_len);
+                        msg_tx.data.buf_len_exp = sim.uicc.buf_rx_len;
+                        memcpy(msg_tx.data.buf, sim.uicc.buf_tx,
+                               sim.uicc.buf_tx_len);
                         if (io_send(&msg_tx) != 0)
                         {
                             printf("Failed to send response.\n");
@@ -110,7 +110,7 @@ int32_t main(int32_t const argc,
                     }
                     else
                     {
-                        printf("USIM IO failed.\n");
+                        printf("Sim IO failed.\n");
                     }
                 }
             }

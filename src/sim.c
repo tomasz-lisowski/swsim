@@ -1,9 +1,10 @@
-#include "usim.h"
+#include "sim.h"
+#include "apduh.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-static void uicc_state_print(usim_st *const state)
+static void uicc_state_print(sim_st *const state)
 {
     uicc_fsm_state_et state_fsm_tmp;
     uicc_fsm_state(&state->uicc, &state_fsm_tmp);
@@ -30,7 +31,7 @@ static void uicc_state_print(usim_st *const state)
     printf("%.*s", state->dbg_str_len, state->dbg_str);
 }
 
-static void usim_rx_print(usim_st *const state)
+static void sim_rx_print(sim_st *const state)
 {
     printf("(RX");
     for (uint16_t rx_idx = 0U; rx_idx < state->uicc.buf_rx_len; ++rx_idx)
@@ -40,7 +41,7 @@ static void usim_rx_print(usim_st *const state)
     printf(")\n");
 }
 
-static void usim_tx_print(usim_st *const state)
+static void sim_tx_print(sim_st *const state)
 {
     printf("(TX");
     for (uint16_t tx_idx = 0U; tx_idx < state->uicc.buf_tx_len; ++tx_idx)
@@ -60,7 +61,7 @@ static void usim_tx_print(usim_st *const state)
  * @note If there is more than 1 reader available, one will be selected
  * automatically.
  */
-static int32_t simcard_connect(usim_st *const state)
+static int32_t simcard_connect(sim_st *const state)
 {
     /* Free the old selected readear. */
     if (state->internal.reader_selected != NULL)
@@ -151,7 +152,7 @@ static int32_t simcard_connect(usim_st *const state)
 }
 #endif
 
-int32_t usim_init(usim_st *const state)
+int32_t sim_init(sim_st *const state)
 {
 #if SIM_PASSTHROUGH == 1
     int32_t ret = scraw_init(&state->internal.scraw_ctx);
@@ -190,14 +191,22 @@ int32_t usim_init(usim_st *const state)
             printf("%.*s", state->dbg_str_len, state->dbg_str);
             if (uicc_fs_disk_mount(&state->uicc, &disk) == UICC_RET_SUCCESS)
             {
-                state->dbg_str_len = state->dbg_str_size;
-                if (usim_init_mock(state) == 0)
+                if (uicc_apduh_pro_register(&state->uicc, sim_apduh_demux) ==
+                    UICC_RET_SUCCESS)
                 {
-                    return 0;
+                    state->dbg_str_len = state->dbg_str_size;
+                    if (sim_init_mock(state) == 0)
+                    {
+                        return 0;
+                    }
+                    else
+                    {
+                        printf("Failed to mock the init of UICC.\n");
+                    }
                 }
                 else
                 {
-                    printf("Failed to mock the init of UICC.\n");
+                    printf("Failed to register a proprietary APDU handler.\n");
                 }
             }
             else
@@ -213,12 +222,12 @@ int32_t usim_init(usim_st *const state)
     }
     else
     {
-        printf("Failed to create disk.\n");
+        printf("Failed to create disk: %s.\n", uicc_dbg_ret_str(ret_disk));
     }
     return -1;
 }
 
-int32_t usim_init_mock(usim_st *const state)
+int32_t sim_init_mock(sim_st *const state)
 {
     static uint8_t const pps_req[] = {0xFF, 0x10, 0x94, 0x7B};
     static_assert(sizeof(pps_req) / sizeof(pps_req[0U] >= 2),
@@ -307,9 +316,9 @@ int32_t usim_init_mock(usim_st *const state)
         }
 
         /* Push the data to UICC IO. */
-        usim_rx_print(state);
+        sim_rx_print(state);
         uicc_io(&state->uicc);
-        usim_tx_print(state);
+        sim_tx_print(state);
         uicc_state_print(state);
         uicc_fsm_state(&state->uicc, &state_fsm);
 
@@ -390,7 +399,7 @@ int32_t usim_init_mock(usim_st *const state)
     }
 }
 
-int32_t usim_io(usim_st *const state)
+int32_t sim_io(sim_st *const state)
 {
 #if SIM_PASSTHROUGH == 1
     scraw_raw_st tpdu = {
@@ -418,11 +427,15 @@ int32_t usim_io(usim_st *const state)
         (uint16_t)res.res_len; /* Safe cast due to bound check */
 #else
     uicc_fsm_state_et state_fsm;
-    usim_rx_print(state);
+    sim_rx_print(state);
     uicc_io(&state->uicc);
-    usim_tx_print(state);
+    sim_tx_print(state);
     uicc_state_print(state);
     uicc_fsm_state(&state->uicc, &state_fsm);
+    if (state_fsm == UICC_FSM_STATE_OFF)
+    {
+        return -1;
+    }
 #endif
     return 0;
 }
