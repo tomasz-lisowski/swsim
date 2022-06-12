@@ -11,7 +11,8 @@
  * @param res
  * @param procedure_count
  * @return Return code.
- * @note As described in ETSI TS 102 221 V16.4.0 pg.84 sec.11.1.1.
+ * @note As described in 3GPP 31.101 V17.0.0 pg.19 sec.11.1.1.
+ * (and ETSI TS 102 221 V16.4.0 pg.84 sec.11.1.1.)
  */
 static uicc_apduh_ft apduh_select;
 static uicc_ret_et apduh_select(uicc_st *const uicc_state,
@@ -352,7 +353,16 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
                 0x95, /* 'C6': Usage qualifier. */
                 0xA5, /* '62': Proprietary information. */
                 0xC6, /* '62': PIN status template DO. */
-                // 0x89, /* 'A5': Platform to platform CAT secured APDU. */
+                // 0x89, /* 'A5': Platform to platform CAT secured APDU. Absent
+                //          since 3GPP 31.101 V17.0.0 pg.19 sec.11.1.1.4.6
+                //          indicates this shall not be present unlike what was
+                //          indicated in ETSI TS 102 221 V16.4.0
+                //          sec.11.1.1.4.6.10. */
+
+                /**
+                 * All security attributes are indicated by reference so these
+                 * tags are not used.
+                 */
                 // 0x8C, /* '62': Security attributes (compact). */
                 // 0xAB, /* '62': Security attributes (expanded). */
             };
@@ -404,7 +414,9 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
             };
             uint8_t const data_app_clk_min[1U] = {
                 0xFF, /* Application minimum clock frequency. 0xFF = No minimum
-                         app clock frequency is indicated. */
+                         app clock frequency is indicated. According to
+                         3GPP 31.101 V17.0.0 pg.20 sec.11.1.1.4.6, a value of
+                         1MHz will be assumed. */
             };
             uint32_t const data_mem_available_be =
                 __builtin_bswap32(UINT32_MAX - uicc_state->fs.va.cur_tree->len);
