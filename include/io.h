@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <uicc/uicc.h>
+#include <swicc/swicc.h>
 
 typedef struct msg_hdr_s
 {
@@ -19,7 +19,7 @@ typedef struct msg_data_s
      */
     uint32_t buf_len_exp;
 
-    uint8_t buf[UICC_DATA_MAX];
+    uint8_t buf[SWICC_DATA_MAX];
 } __attribute__((packed)) msg_data_st;
 
 /**

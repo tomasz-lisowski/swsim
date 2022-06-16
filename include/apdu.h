@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <uicc/uicc.h>
+#include <swicc/swicc.h>
 
 /**
  * @brief Parse the raw CLA byte.
@@ -10,4 +10,4 @@
  * table.10.3.
  * @return Parsed CLA.
  */
-uicc_apdu_cla_st sim_apdu_cmd_cla_parse(uint8_t const cla_raw);
+swicc_apdu_cla_st sim_apdu_cmd_cla_parse(uint8_t const cla_raw);

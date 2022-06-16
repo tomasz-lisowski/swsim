@@ -48,10 +48,10 @@ int32_t main(int32_t const argc,
         sim.dbg_str = NULL;
 #endif
 
-        sim.uicc.buf_rx = msg_rx.data.buf;
-        sim.uicc.buf_rx_len = 0U;
-        sim.uicc.buf_tx = msg_tx.data.buf;
-        sim.uicc.buf_tx_len = sizeof(msg_tx.data.buf);
+        sim.swicc.buf_rx = msg_rx.data.buf;
+        sim.swicc.buf_rx_len = 0U;
+        sim.swicc.buf_tx = msg_tx.data.buf;
+        sim.swicc.buf_tx_len = sizeof(msg_tx.data.buf);
 
         if (sim_init(&sim) != 0)
         {
@@ -64,7 +64,7 @@ int32_t main(int32_t const argc,
 
         int32_t recv_ret = -1;
         /* When a client connects, send it an init message. */
-        msg_rx.data.buf_len_exp = sim.uicc.buf_rx_len;
+        msg_rx.data.buf_len_exp = sim.swicc.buf_rx_len;
         msg_rx.data.cont_state = 0U;
         msg_rx.hdr.size = offsetof(msg_data_st, buf);
         bool init = true;
@@ -80,15 +80,15 @@ int32_t main(int32_t const argc,
                     msg_rx.hdr.size - (uint8_t)offsetof(msg_data_st, buf);
                 if (buf_rx_len <= UINT16_MAX)
                 {
-                    sim.uicc.buf_rx = msg_rx.data.buf;
-                    sim.uicc.buf_rx_len = (uint16_t)
+                    sim.swicc.buf_rx = msg_rx.data.buf;
+                    sim.swicc.buf_rx_len = (uint16_t)
                         buf_rx_len; /* Safe cast due to bound check. */
-                    sim.uicc.buf_tx = msg_tx.data.buf;
-                    sim.uicc.buf_tx_len = sizeof(msg_tx.data.buf);
+                    sim.swicc.buf_tx = msg_tx.data.buf;
+                    sim.swicc.buf_tx_len = sizeof(msg_tx.data.buf);
                     if (sim_io(&sim) == 0)
                     {
                         if (sizeof(msg_tx.data.cont_state) +
-                                sim.uicc.buf_tx_len >
+                                sim.swicc.buf_tx_len >
                             UINT32_MAX)
                         {
                             break;
@@ -97,11 +97,11 @@ int32_t main(int32_t const argc,
                         msg_tx.hdr.size =
                             (uint32_t)(sizeof(msg_tx.data.cont_state) +
                                        sizeof(msg_tx.data.buf_len_exp) +
-                                       sim.uicc.buf_tx_len);
+                                       sim.swicc.buf_tx_len);
                         msg_tx.data.cont_state = 0U;
-                        msg_tx.data.buf_len_exp = sim.uicc.buf_rx_len;
-                        memcpy(msg_tx.data.buf, sim.uicc.buf_tx,
-                               sim.uicc.buf_tx_len);
+                        msg_tx.data.buf_len_exp = sim.swicc.buf_rx_len;
+                        memcpy(msg_tx.data.buf, sim.swicc.buf_tx,
+                               sim.swicc.buf_tx_len);
                         if (io_send(&msg_tx) != 0)
                         {
                             printf("Failed to send response.\n");

@@ -19,30 +19,32 @@ MAIN_CC_FLAGS:=\
 	-Wshadow \
 	-O2 \
 	-I$(DIR_INCLUDE) \
-	-I$(DIR_LIB)/uicc/include \
+	-I$(DIR_LIB)/swicc/include \
 	-I$(DIR_LIB)/scraw/include \
-	-L$(DIR_LIB)/uicc/build \
+	-L$(DIR_LIB)/swicc/build \
 	-L$(DIR_LIB)/scraw/build\
 	$(shell pkg-config --cflags libpcsclite) \
-	-luicc \
+	-lswicc \
 	-lscraw \
 	-lpcsclite
+MAIN_LIBSWICC_TARGET:=main
 
 all: main
 .PHONY: all
 
 main: $(DIR_BUILD) $(DIR_BUILD)/$(MAIN_NAME) $(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN)
+main-dbg: MAIN_LIBSWICC_TARGET:=main-dbg
 main-dbg: MAIN_CC_FLAGS+=-g -DDEBUG -fsanitize=address
 main-dbg: main
 .PHONY: main main-dbg
 
-# Build swsim.
-$(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN): $(DIR_LIB)/uicc/build/$(LIB_PREFIX)uicc.$(EXT_LIB_STATIC) $(DIR_LIB)/scraw/build/$(LIB_PREFIX)scraw.$(EXT_LIB_STATIC) $(MAIN_OBJ)
+# Build swSIM.
+$(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN): $(DIR_LIB)/swicc/build/$(LIB_PREFIX)swicc.$(EXT_LIB_STATIC) $(DIR_LIB)/scraw/build/$(LIB_PREFIX)scraw.$(EXT_LIB_STATIC) $(MAIN_OBJ)
 	$(CC) $(MAIN_OBJ) -o $(@) $(MAIN_CC_FLAGS)
 
-# Build uicc.
-$(DIR_LIB)/uicc/build/$(LIB_PREFIX)uicc.$(EXT_LIB_STATIC):
-	cd $(DIR_LIB)/uicc && $(MAKE) main-dbg
+# Build swICC.
+$(DIR_LIB)/swicc/build/$(LIB_PREFIX)swicc.$(EXT_LIB_STATIC):
+	cd $(DIR_LIB)/swicc && $(MAKE) $(MAIN_LIBSWICC_TARGET)
 
 # Build scraw.
 $(DIR_LIB)/scraw/build/$(LIB_PREFIX)scraw.$(EXT_LIB_STATIC):
@@ -59,6 +61,6 @@ $(DIR_BUILD) $(DIR_BUILD)/$(MAIN_NAME):
 	$(call pal_mkdir,$(@))
 clean:
 	$(call pal_rmdir,$(DIR_BUILD))
-	cd $(DIR_LIB)/uicc && $(MAKE) clean
+	cd $(DIR_LIB)/swicc && $(MAKE) clean
 	cd $(DIR_LIB)/scraw && $(MAKE) clean
 .PHONY: clean

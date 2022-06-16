@@ -5,8 +5,8 @@ build-lib/
 # Clangd config
 compile_flags.txt
 
-# UICC FS Disk
-*.uicc
+# SWICC FS Disk
+*.swicc
 
 # Logs
 *.log

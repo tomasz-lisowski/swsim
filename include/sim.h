@@ -2,7 +2,7 @@
 
 #include <scraw.h>
 #include <stdint.h>
-#include <uicc/uicc.h>
+#include <swicc/swicc.h>
 
 /* If the pass-through to a real SIM should be done for unknown commands. */
 #define SIM_PASSTHROUGH 0U
@@ -15,7 +15,7 @@ typedef struct sim_st
         char *reader_selected;
         scraw_st scraw_ctx;
     } internal;
-    uicc_st uicc;
+    swicc_st swicc;
 
     char *dbg_str;
     uint16_t dbg_str_len;

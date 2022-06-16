@@ -1,12 +1,12 @@
 #include "apduh.h"
 #include "apdu.h"
-#include "uicc/fs/common.h"
+#include "swicc/fs/common.h"
 #include <stddef.h>
 #include <string.h>
 
 /**
  * @brief Handle the SELECT command in the proprietary classes 0X, 4X, and 6X.
- * @param uicc_state
+ * @param swicc_state
  * @param cmd
  * @param res
  * @param procedure_count
@@ -14,11 +14,11 @@
  * @note As described in 3GPP 31.101 V17.0.0 pg.19 sec.11.1.1.
  * (and ETSI TS 102 221 V16.4.0 pg.84 sec.11.1.1.)
  */
-static uicc_apduh_ft apduh_select;
-static uicc_ret_et apduh_select(uicc_st *const uicc_state,
-                                uicc_apdu_cmd_st const *const cmd,
-                                uicc_apdu_res_st *const res,
-                                uint32_t const procedure_count)
+static swicc_apduh_ft apduh_select;
+static swicc_ret_et apduh_select(swicc_st *const swicc_state,
+                                 swicc_apdu_cmd_st const *const cmd,
+                                 swicc_apdu_res_st *const res,
+                                 uint32_t const procedure_count)
 {
     enum meth_e
     {
@@ -46,7 +46,7 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
     } __attribute((unused)) app_sesh_ctrl = APP_SESH_CTRL_RFU;
 
     /* Only used with selection by AID. */
-    uicc_fs_occ_et occ = UICC_FS_OCC_FIRST;
+    swicc_fs_occ_et occ = SWICC_FS_OCC_FIRST;
     bool occ_rfu = false;
 
     /* This fully parses P1. */
@@ -109,16 +109,16 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
         switch (cmd->hdr->p2 & 0b00000011)
         {
         case 0b00000000:
-            occ = UICC_FS_OCC_FIRST;
+            occ = SWICC_FS_OCC_FIRST;
             break;
         case 0b00000001:
-            occ = UICC_FS_OCC_LAST;
+            occ = SWICC_FS_OCC_LAST;
             break;
         case 0b00000010:
-            occ = UICC_FS_OCC_NEXT;
+            occ = SWICC_FS_OCC_NEXT;
             break;
         case 0b00000011:
-            occ = UICC_FS_OCC_PREV;
+            occ = SWICC_FS_OCC_PREV;
             break;
         default:
             /* RFU */
@@ -136,10 +136,10 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
         (cmd->hdr->p1 != 0x04 && (cmd->hdr->p2 & 0b00000011) != 0U) ||
         occ_rfu == true)
     {
-        res->sw1 = UICC_APDU_SW1_CHER_P1P2_INFO;
+        res->sw1 = SWICC_APDU_SW1_CHER_P1P2_INFO;
         res->sw2 = 0x86; /* "Incorrect parameters P1 to P2" */
         res->data.len = 0U;
-        return UICC_RET_SUCCESS;
+        return SWICC_RET_SUCCESS;
     }
 
     /**
@@ -154,10 +154,10 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
          */
         if (cmd->data->len != 0U)
         {
-            res->sw1 = UICC_APDU_SW1_CHER_UNK;
+            res->sw1 = SWICC_APDU_SW1_CHER_UNK;
             res->sw2 = 0U;
             res->data.len = 0U;
-            return UICC_RET_SUCCESS;
+            return SWICC_RET_SUCCESS;
         }
 
         /**
@@ -166,10 +166,10 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
          */
         if (*cmd->p3 > 0)
         {
-            res->sw1 = UICC_APDU_SW1_PROC_ACK_ALL;
+            res->sw1 = SWICC_APDU_SW1_PROC_ACK_ALL;
             res->sw2 = 0U;
             res->data.len = *cmd->p3; /* Length of expected data. */
-            return UICC_RET_SUCCESS;
+            return SWICC_RET_SUCCESS;
         }
     }
 
@@ -180,10 +180,10 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
      */
     if (cmd->data->len != *cmd->p3 && procedure_count >= 1U)
     {
-        res->sw1 = UICC_APDU_SW1_CHER_LEN;
+        res->sw1 = SWICC_APDU_SW1_CHER_LEN;
         res->sw2 = 0x02; /* "Wrong length" */
         res->data.len = 0U;
-        return UICC_RET_SUCCESS;
+        return SWICC_RET_SUCCESS;
     }
 
     /* Perform the requested action. */
@@ -192,83 +192,83 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
         if (meth == METH_RFU || data_req == DATA_REQ_RFU ||
             meth == METH_DF_NESTED || meth == METH_DF_PARENT)
         {
-            res->sw1 = UICC_APDU_SW1_CHER_P1P2;
+            res->sw1 = SWICC_APDU_SW1_CHER_P1P2;
             res->sw2 = 0U;
             res->data.len = 0U;
-            return UICC_RET_SUCCESS;
+            return SWICC_RET_SUCCESS;
         }
-        uicc_ret_et ret_select = UICC_RET_ERROR;
+        swicc_ret_et ret_select = SWICC_RET_ERROR;
         switch (meth)
         {
         case METH_FID:
             /* Must contain exactly 1 file ID. */
-            if (cmd->data->len != sizeof(uicc_fs_id_kt))
+            if (cmd->data->len != sizeof(swicc_fs_id_kt))
             {
-                ret_select = UICC_RET_ERROR;
+                ret_select = SWICC_RET_ERROR;
             }
             else
             {
-                ret_select = uicc_va_select_file_id(
-                    &uicc_state->fs,
-                    __builtin_bswap16(*(uicc_fs_id_kt *)cmd->data->b));
+                ret_select = swicc_va_select_file_id(
+                    &swicc_state->fs,
+                    __builtin_bswap16(*(swicc_fs_id_kt *)cmd->data->b));
             }
             break;
         case METH_DF_NAME:
             /* Check if maybe trying to select an ADF. */
-            if (cmd->data->len > UICC_FS_ADF_AID_LEN ||
-                cmd->data->len < UICC_FS_ADF_AID_RID_LEN ||
-                occ != UICC_FS_OCC_FIRST)
+            if (cmd->data->len > SWICC_FS_ADF_AID_LEN ||
+                cmd->data->len < SWICC_FS_ADF_AID_RID_LEN ||
+                occ != SWICC_FS_OCC_FIRST)
             {
                 /* Try to select by DF name at least. */
-                if (cmd->data->len == 0 || occ != UICC_FS_OCC_FIRST)
+                if (cmd->data->len == 0 || occ != SWICC_FS_OCC_FIRST)
                 {
-                    ret_select = UICC_RET_ERROR;
+                    ret_select = SWICC_RET_ERROR;
                 }
                 else
                 {
-                    ret_select = uicc_va_select_file_dfname(
-                        &uicc_state->fs, (char *)cmd->data->b, cmd->data->len);
+                    ret_select = swicc_va_select_file_dfname(
+                        &swicc_state->fs, (char *)cmd->data->b, cmd->data->len);
                 }
             }
             else
             {
-                ret_select = uicc_va_select_adf(&uicc_state->fs, cmd->data->b,
-                                                cmd->data->len -
-                                                    UICC_FS_ADF_AID_RID_LEN);
+                ret_select = swicc_va_select_adf(&swicc_state->fs, cmd->data->b,
+                                                 cmd->data->len -
+                                                     SWICC_FS_ADF_AID_RID_LEN);
             }
             break;
         case METH_PATH_MF:
             /* Must contain at least 1 ID in the path. */
-            if (cmd->data->len < sizeof(uicc_fs_id_kt) ||
-                occ != UICC_FS_OCC_FIRST)
+            if (cmd->data->len < sizeof(swicc_fs_id_kt) ||
+                occ != SWICC_FS_OCC_FIRST)
             {
-                ret_select = UICC_RET_ERROR;
+                ret_select = SWICC_RET_ERROR;
             }
             else
             {
-                uicc_fs_path_st const path = {
+                swicc_fs_path_st const path = {
                     .b = cmd->data->b,
                     .len = cmd->data->len,
-                    .type = UICC_FS_PATH_TYPE_MF,
+                    .type = SWICC_FS_PATH_TYPE_MF,
                 };
-                ret_select = uicc_va_select_file_path(&uicc_state->fs, path);
+                ret_select = swicc_va_select_file_path(&swicc_state->fs, path);
             }
             break;
         case METH_PATH_DF:
             /* Must contain at least 1 ID in the path. */
-            if (cmd->data->len < sizeof(uicc_fs_id_kt) ||
-                occ != UICC_FS_OCC_FIRST)
+            if (cmd->data->len < sizeof(swicc_fs_id_kt) ||
+                occ != SWICC_FS_OCC_FIRST)
             {
-                ret_select = UICC_RET_ERROR;
+                ret_select = SWICC_RET_ERROR;
             }
             else
             {
-                uicc_fs_path_st const path = {
+                swicc_fs_path_st const path = {
                     .b = cmd->data->b,
                     .len = cmd->data->len,
-                    .type = UICC_FS_PATH_TYPE_DF,
+                    .type = SWICC_FS_PATH_TYPE_DF,
                 };
-                ret_select = uicc_va_select_file_path(&uicc_state->fs, path);
+                ret_select = swicc_va_select_file_path(&swicc_state->fs, path);
             }
             break;
         default:
@@ -279,33 +279,34 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
             __builtin_unreachable();
         }
 
-        if (ret_select == UICC_RET_FS_NOT_FOUND)
+        if (ret_select == SWICC_RET_FS_NOT_FOUND)
         {
-            res->sw1 = UICC_APDU_SW1_CHER_P1P2_INFO;
+            res->sw1 = SWICC_APDU_SW1_CHER_P1P2_INFO;
             res->sw2 = 0x82; /* "Not found" */
             res->data.len = 0U;
-            return UICC_RET_SUCCESS;
+            return SWICC_RET_SUCCESS;
         }
-        else if (ret_select != UICC_RET_SUCCESS)
+        else if (ret_select != SWICC_RET_SUCCESS)
         {
             /* Failed to select. */
-            res->sw1 = UICC_APDU_SW1_CHER_UNK;
+            res->sw1 = SWICC_APDU_SW1_CHER_UNK;
             res->sw2 = 0U;
             res->data.len = 0U;
-            return UICC_RET_SUCCESS;
+            return SWICC_RET_SUCCESS;
         }
 
         if (data_req == DATA_REQ_ABSENT)
         {
-            res->sw1 = UICC_APDU_SW1_NORM_NONE;
+            res->sw1 = SWICC_APDU_SW1_NORM_NONE;
             res->sw2 = 0U;
             res->data.len = 0U;
-            return UICC_RET_SUCCESS;
+            return SWICC_RET_SUCCESS;
         }
         else
         {
             /* The file that was requested to be selected. */
-            uicc_fs_file_st *const file_selected = &uicc_state->fs.va.cur_file;
+            swicc_fs_file_st *const file_selected =
+                &swicc_state->fs.va.cur_file;
 
             /**
              * ETSI TS 102 221 V16.4.0 pg.86 sec.11.1.1.3 describes what BER-TLV
@@ -367,17 +368,17 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
                 // 0xAB, /* '62': Security attributes (expanded). */
             };
             static uint32_t const tags_count = sizeof(tags) / sizeof(tags[0U]);
-            uicc_dato_bertlv_tag_st bertlv_tags[tags_count];
+            swicc_dato_bertlv_tag_st bertlv_tags[tags_count];
             for (uint8_t tag_idx = 0U; tag_idx < tags_count; ++tag_idx)
             {
-                if (uicc_dato_bertlv_tag_create(&bertlv_tags[tag_idx],
-                                                tags[tag_idx]) !=
-                    UICC_RET_SUCCESS)
+                if (swicc_dato_bertlv_tag_create(&bertlv_tags[tag_idx],
+                                                 tags[tag_idx]) !=
+                    SWICC_RET_SUCCESS)
                 {
-                    res->sw1 = UICC_APDU_SW1_CHER_UNK;
+                    res->sw1 = SWICC_APDU_SW1_CHER_UNK;
                     res->sw2 = 0U;
                     res->data.len = 0U;
-                    return UICC_RET_SUCCESS;
+                    return SWICC_RET_SUCCESS;
                 }
             }
 
@@ -418,8 +419,8 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
                          3GPP 31.101 V17.0.0 pg.20 sec.11.1.1.4.6, a value of
                          1MHz will be assumed. */
             };
-            uint32_t const data_mem_available_be =
-                __builtin_bswap32(UINT32_MAX - uicc_state->fs.va.cur_tree->len);
+            uint32_t const data_mem_available_be = __builtin_bswap32(
+                UINT32_MAX - swicc_state->fs.va.cur_tree->len);
             uint8_t const data_file_details[1U] = {
                 0b00000001, /**
                              * LSB>MSB
@@ -486,31 +487,32 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
                 },
             };
             uint8_t lcs_be;
-            uint8_t descr_be[UICC_FS_FILE_DESCR_LEN_MAX];
+            uint8_t descr_be[SWICC_FS_FILE_DESCR_LEN_MAX];
             uint8_t descr_len = 0U;
-            if (uicc_fs_file_lcs(file_selected, &lcs_be) != UICC_RET_SUCCESS ||
-                uicc_fs_file_descr(uicc_state->fs.va.cur_tree, file_selected,
-                                   descr_be, &descr_len) != UICC_RET_SUCCESS)
+            if (swicc_fs_file_lcs(file_selected, &lcs_be) !=
+                    SWICC_RET_SUCCESS ||
+                swicc_fs_file_descr(swicc_state->fs.va.cur_tree, file_selected,
+                                    descr_be, &descr_len) != SWICC_RET_SUCCESS)
             {
-                res->sw1 = UICC_APDU_SW1_CHER_UNK;
+                res->sw1 = SWICC_APDU_SW1_CHER_UNK;
                 res->sw2 = 0U;
                 res->data.len = 0U;
-                return UICC_RET_SUCCESS;
+                return SWICC_RET_SUCCESS;
             }
-            uint8_t data_aid[UICC_FS_ADF_AID_LEN];
-            if (file_selected->hdr_item.type == UICC_FS_ITEM_TYPE_FILE_ADF)
+            uint8_t data_aid[SWICC_FS_ADF_AID_LEN];
+            if (file_selected->hdr_item.type == SWICC_FS_ITEM_TYPE_FILE_ADF)
             {
                 memcpy(file_selected->hdr_spec.adf.aid.rid, data_aid,
-                       UICC_FS_ADF_AID_RID_LEN);
+                       SWICC_FS_ADF_AID_RID_LEN);
                 memcpy(file_selected->hdr_spec.adf.aid.pix,
-                       &data_aid[UICC_FS_ADF_AID_RID_LEN],
-                       UICC_FS_ADF_AID_PIX_LEN);
+                       &data_aid[SWICC_FS_ADF_AID_RID_LEN],
+                       SWICC_FS_ADF_AID_PIX_LEN);
             }
 
             uint8_t *bertlv_buf;
             uint32_t bertlv_len;
-            uicc_ret_et ret_bertlv = UICC_RET_ERROR;
-            uicc_dato_bertlv_enc_st enc;
+            swicc_ret_et ret_bertlv = SWICC_RET_ERROR;
+            swicc_dato_bertlv_enc_st enc;
             for (bool dry_run = true;; dry_run = false)
             {
                 if (dry_run)
@@ -528,225 +530,229 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
                     bertlv_buf = res->data.b;
                 }
 
-                uicc_dato_bertlv_enc_init(&enc, bertlv_buf, bertlv_len);
-                uicc_dato_bertlv_enc_st enc_fcp;
-                uicc_dato_bertlv_enc_st enc_prop_info;
-                uicc_dato_bertlv_enc_st enc_pin_status;
+                swicc_dato_bertlv_enc_init(&enc, bertlv_buf, bertlv_len);
+                swicc_dato_bertlv_enc_st enc_fcp;
+                swicc_dato_bertlv_enc_st enc_prop_info;
+                swicc_dato_bertlv_enc_st enc_pin_status;
 
-                if (uicc_dato_bertlv_enc_nstd_start(&enc, &enc_fcp) !=
-                        UICC_RET_SUCCESS ||
+                if (swicc_dato_bertlv_enc_nstd_start(&enc, &enc_fcp) !=
+                        SWICC_RET_SUCCESS ||
 
                     /* Short file ID (SFI). */
-                    (UICC_FS_FILE_EF_CHECK(file_selected)
-                         ? (uicc_dato_bertlv_enc_data(&enc_fcp, &data_sid,
-                                                      sizeof(data_sid)) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(
-                                &enc_fcp, &bertlv_tags[9U]) != UICC_RET_SUCCESS)
+                    (SWICC_FS_FILE_EF_CHECK(file_selected)
+                         ? (swicc_dato_bertlv_enc_data(&enc_fcp, &data_sid,
+                                                       sizeof(data_sid)) !=
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_fcp,
+                                                      &bertlv_tags[9U]) !=
+                                SWICC_RET_SUCCESS)
                          : false) ||
 
                     /* Total file size. */
-                    uicc_dato_bertlv_enc_data(
+                    swicc_dato_bertlv_enc_data(
                         &enc_fcp, (uint8_t *)&data_size_tot_be,
-                        sizeof(data_size_tot_be)) != UICC_RET_SUCCESS ||
-                    uicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[2U]) !=
-                        UICC_RET_SUCCESS ||
+                        sizeof(data_size_tot_be)) != SWICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[2U]) !=
+                        SWICC_RET_SUCCESS ||
 
                     /* File size for EFs. */
-                    (UICC_FS_FILE_EF_CHECK(file_selected)
-                         ? (uicc_dato_bertlv_enc_data(
+                    (SWICC_FS_FILE_EF_CHECK(file_selected)
+                         ? (swicc_dato_bertlv_enc_data(
                                 &enc_fcp, (uint8_t *)&data_size_be,
-                                sizeof(data_size_be)) != UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(
-                                &enc_fcp, &bertlv_tags[1U]) != UICC_RET_SUCCESS)
+                                sizeof(data_size_be)) != SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_fcp,
+                                                      &bertlv_tags[1U]) !=
+                                SWICC_RET_SUCCESS)
                          : false) ||
 
                     /* PIN status for non-EFs. */
-                    (UICC_FS_FILE_FOLDER_CHECK(file_selected)
-                         ? (uicc_dato_bertlv_enc_nstd_start(&enc_fcp,
-                                                            &enc_pin_status) !=
-                                UICC_RET_SUCCESS ||
+                    (SWICC_FS_FILE_FOLDER_CHECK(file_selected)
+                         ? (swicc_dato_bertlv_enc_nstd_start(&enc_fcp,
+                                                             &enc_pin_status) !=
+                                SWICC_RET_SUCCESS ||
 
                             /* Key reference 1. */
-                            uicc_dato_bertlv_enc_data(
+                            swicc_dato_bertlv_enc_data(
                                 &enc_pin_status,
                                 (uint8_t *)&data_pin_status_key_ref[0U],
                                 sizeof(data_pin_status_key_ref[0U])) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_pin_status,
-                                                     &bertlv_tags[4U]) !=
-                                UICC_RET_SUCCESS ||
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_pin_status,
+                                                      &bertlv_tags[4U]) !=
+                                SWICC_RET_SUCCESS ||
 
                             /* Usage qualifier 1. */
-                            uicc_dato_bertlv_enc_data(
+                            swicc_dato_bertlv_enc_data(
                                 &enc_pin_status,
                                 (uint8_t *)&data_pin_status_usage_qualif[0U],
                                 sizeof(data_pin_status_usage_qualif[0U])) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_pin_status,
-                                                     &bertlv_tags[13U]) !=
-                                UICC_RET_SUCCESS ||
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_pin_status,
+                                                      &bertlv_tags[13U]) !=
+                                SWICC_RET_SUCCESS ||
 
                             /* PS_DO. */
-                            uicc_dato_bertlv_enc_data(
+                            swicc_dato_bertlv_enc_data(
                                 &enc_pin_status,
                                 (uint8_t *)&data_pin_status_ps_do,
                                 sizeof(data_pin_status_ps_do)) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_pin_status,
-                                                     &bertlv_tags[12U]) !=
-                                UICC_RET_SUCCESS ||
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_pin_status,
+                                                      &bertlv_tags[12U]) !=
+                                SWICC_RET_SUCCESS ||
 
-                            uicc_dato_bertlv_enc_nstd_end(&enc_fcp,
-                                                          &enc_pin_status) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_fcp,
-                                                     &bertlv_tags[15U]) !=
-                                UICC_RET_SUCCESS)
+                            swicc_dato_bertlv_enc_nstd_end(&enc_fcp,
+                                                           &enc_pin_status) !=
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_fcp,
+                                                      &bertlv_tags[15U]) !=
+                                SWICC_RET_SUCCESS)
                          : false) ||
 
                     /* Security attributes (reference). */
-                    uicc_dato_bertlv_enc_data(
+                    swicc_dato_bertlv_enc_data(
                         &enc_fcp, (uint8_t *)&data_sec_attr,
-                        sizeof(data_sec_attr)) != UICC_RET_SUCCESS ||
-                    uicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[11U]) !=
-                        UICC_RET_SUCCESS ||
+                        sizeof(data_sec_attr)) != SWICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[11U]) !=
+                        SWICC_RET_SUCCESS ||
 
                     /* Life cycle status. */
-                    uicc_dato_bertlv_enc_data(&enc_fcp, &lcs_be,
-                                              sizeof(lcs_be)) !=
-                        UICC_RET_SUCCESS ||
-                    uicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[10U]) !=
-                        UICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_data(&enc_fcp, &lcs_be,
+                                               sizeof(lcs_be)) !=
+                        SWICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[10U]) !=
+                        SWICC_RET_SUCCESS ||
 
                     /* Proprietary info. */
-                    uicc_dato_bertlv_enc_nstd_start(&enc_fcp, &enc_prop_info) !=
-                        UICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_nstd_start(
+                        &enc_fcp, &enc_prop_info) != SWICC_RET_SUCCESS ||
 
                     /* Specific UICC environmental conditions for MF.  */
-                    (file_selected->hdr_item.type == UICC_FS_ITEM_TYPE_FILE_MF
-                         ? (uicc_dato_bertlv_enc_data(
+                    (file_selected->hdr_item.type == SWICC_FS_ITEM_TYPE_FILE_MF
+                         ? (swicc_dato_bertlv_enc_data(
                                 &enc_prop_info, (uint8_t *)&data_uicc_env_cond,
                                 sizeof(data_uicc_env_cond)) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_prop_info,
-                                                     &bertlv_tags[9U]) !=
-                                UICC_RET_SUCCESS)
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_prop_info,
+                                                      &bertlv_tags[9U]) !=
+                                SWICC_RET_SUCCESS)
                          : false) ||
 
                     /* Supported system commands for folders. */
-                    (UICC_FS_FILE_FOLDER_CHECK(file_selected)
-                         ? (uicc_dato_bertlv_enc_data(
+                    (SWICC_FS_FILE_FOLDER_CHECK(file_selected)
+                         ? (swicc_dato_bertlv_enc_data(
                                 &enc_prop_info,
                                 (uint8_t *)&data_sys_cmd_support,
                                 sizeof(data_sys_cmd_support)) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_prop_info,
-                                                     &bertlv_tags[8U]) !=
-                                UICC_RET_SUCCESS)
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_prop_info,
+                                                      &bertlv_tags[8U]) !=
+                                SWICC_RET_SUCCESS)
                          : false) ||
 
                     /**
                      * File details, reserved file size, and maximum file size
                      * for BER-TLV EFs.
                      */
-                    (UICC_FS_FILE_EF_BERTLV_CHECK(file_selected)
-                         ? (uicc_dato_bertlv_enc_data(
+                    (SWICC_FS_FILE_EF_BERTLV_CHECK(file_selected)
+                         ? (swicc_dato_bertlv_enc_data(
                                 &enc_prop_info,
                                 (uint8_t *)&data_file_size_max_be,
                                 sizeof(data_file_size_max_be)) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_prop_info,
-                                                     &bertlv_tags[7U]) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_data(
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_prop_info,
+                                                      &bertlv_tags[7U]) !=
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_data(
                                 &enc_prop_info,
                                 (uint8_t *)&data_file_size_reserved_be,
                                 sizeof(data_file_size_reserved_be)) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_prop_info,
-                                                     &bertlv_tags[6U]) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_data(
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_prop_info,
+                                                      &bertlv_tags[6U]) !=
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_data(
                                 &enc_prop_info, (uint8_t *)&data_file_details,
                                 sizeof(data_file_details)) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_prop_info,
-                                                     &bertlv_tags[5U]) !=
-                                UICC_RET_SUCCESS)
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_prop_info,
+                                                      &bertlv_tags[5U]) !=
+                                SWICC_RET_SUCCESS)
                          : false) ||
 
                     /* Total memory available for folders and BER-TLV EFs. */
-                    ((UICC_FS_FILE_FOLDER_CHECK(file_selected) ||
-                      UICC_FS_FILE_EF_BERTLV_CHECK(file_selected))
-                         ? (uicc_dato_bertlv_enc_data(
+                    ((SWICC_FS_FILE_FOLDER_CHECK(file_selected) ||
+                      SWICC_FS_FILE_EF_BERTLV_CHECK(file_selected))
+                         ? (swicc_dato_bertlv_enc_data(
                                 &enc_prop_info,
                                 (uint8_t *)&data_mem_available_be,
                                 sizeof(data_mem_available_be)) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_prop_info,
-                                                     &bertlv_tags[4U]) !=
-                                UICC_RET_SUCCESS)
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_prop_info,
+                                                      &bertlv_tags[4U]) !=
+                                SWICC_RET_SUCCESS)
                          : false) ||
 
                     /* App power consumption and min app clock for ADF. */
-                    (file_selected->hdr_item.type == UICC_FS_ITEM_TYPE_FILE_ADF
-                         ? (uicc_dato_bertlv_enc_data(
+                    (file_selected->hdr_item.type == SWICC_FS_ITEM_TYPE_FILE_ADF
+                         ? (swicc_dato_bertlv_enc_data(
                                 &enc_prop_info, (uint8_t *)&data_app_clk_min,
-                                sizeof(data_app_clk_min)) != UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_prop_info,
-                                                     &bertlv_tags[3U]) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_data(
+                                sizeof(data_app_clk_min)) !=
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_prop_info,
+                                                      &bertlv_tags[3U]) !=
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_data(
                                 &enc_prop_info, (uint8_t *)&data_app_power_cons,
                                 sizeof(data_app_power_cons)) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_prop_info,
-                                                     &bertlv_tags[2U]) !=
-                                UICC_RET_SUCCESS)
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_prop_info,
+                                                      &bertlv_tags[2U]) !=
+                                SWICC_RET_SUCCESS)
                          : false) ||
 
                     /* UICC characteristics for MF. */
-                    (file_selected->hdr_item.type == UICC_FS_ITEM_TYPE_FILE_MF
-                         ? (uicc_dato_bertlv_enc_data(
+                    (file_selected->hdr_item.type == SWICC_FS_ITEM_TYPE_FILE_MF
+                         ? (swicc_dato_bertlv_enc_data(
                                 &enc_prop_info, (uint8_t *)&data_uicc_char,
-                                sizeof(data_uicc_char)) != UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(&enc_prop_info,
-                                                     &bertlv_tags[1U]) !=
-                                UICC_RET_SUCCESS)
+                                sizeof(data_uicc_char)) != SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_prop_info,
+                                                      &bertlv_tags[1U]) !=
+                                SWICC_RET_SUCCESS)
                          : false) ||
 
-                    uicc_dato_bertlv_enc_nstd_end(&enc_fcp, &enc_prop_info) !=
-                        UICC_RET_SUCCESS ||
-                    uicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[14U]) !=
-                        UICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_nstd_end(&enc_fcp, &enc_prop_info) !=
+                        SWICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[14U]) !=
+                        SWICC_RET_SUCCESS ||
 
                     /* DF name (AID) only for ADF. */
-                    (file_selected->hdr_item.type == UICC_FS_ITEM_TYPE_FILE_ADF
-                         ? (uicc_dato_bertlv_enc_data(&enc_fcp, data_aid,
-                                                      sizeof(data_aid)) !=
-                                UICC_RET_SUCCESS ||
-                            uicc_dato_bertlv_enc_hdr(
-                                &enc_fcp, &bertlv_tags[5U]) != UICC_RET_SUCCESS)
+                    (file_selected->hdr_item.type == SWICC_FS_ITEM_TYPE_FILE_ADF
+                         ? (swicc_dato_bertlv_enc_data(&enc_fcp, data_aid,
+                                                       sizeof(data_aid)) !=
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_fcp,
+                                                      &bertlv_tags[5U]) !=
+                                SWICC_RET_SUCCESS)
                          : false) ||
 
                     /* FID. */
-                    uicc_dato_bertlv_enc_data(&enc_fcp, (uint8_t *)&data_id_be,
-                                              sizeof(data_id_be)) !=
-                        UICC_RET_SUCCESS ||
-                    uicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[4U]) !=
-                        UICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_data(&enc_fcp, (uint8_t *)&data_id_be,
+                                               sizeof(data_id_be)) !=
+                        SWICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[4U]) !=
+                        SWICC_RET_SUCCESS ||
 
                     /* File descriptor. */
-                    uicc_dato_bertlv_enc_data(&enc_fcp, descr_be, descr_len) !=
-                        UICC_RET_SUCCESS ||
-                    uicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[3U]) !=
-                        UICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_data(&enc_fcp, descr_be, descr_len) !=
+                        SWICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[3U]) !=
+                        SWICC_RET_SUCCESS ||
 
-                    uicc_dato_bertlv_enc_nstd_end(&enc, &enc_fcp) !=
-                        UICC_RET_SUCCESS ||
-                    uicc_dato_bertlv_enc_hdr(&enc, &bertlv_tags[0U]) !=
-                        UICC_RET_SUCCESS)
+                    swicc_dato_bertlv_enc_nstd_end(&enc, &enc_fcp) !=
+                        SWICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_hdr(&enc, &bertlv_tags[0U]) !=
+                        SWICC_RET_SUCCESS)
                 {
                     break;
                 }
@@ -754,34 +760,34 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
                 /* Stop when finished with the real run (i.e. not dry run). */
                 if (!dry_run)
                 {
-                    ret_bertlv = UICC_RET_SUCCESS;
+                    ret_bertlv = SWICC_RET_SUCCESS;
                     break;
                 }
             }
 
-            if (ret_bertlv == UICC_RET_SUCCESS &&
-                uicc_apdu_rc_enq(&uicc_state->apdu_rc, res->data.b,
-                                 bertlv_len) == UICC_RET_SUCCESS)
+            if (ret_bertlv == SWICC_RET_SUCCESS &&
+                swicc_apdu_rc_enq(&swicc_state->apdu_rc, res->data.b,
+                                  bertlv_len) == SWICC_RET_SUCCESS)
             {
-                res->sw1 = UICC_APDU_SW1_NORM_BYTES_AVAILABLE;
+                res->sw1 = SWICC_APDU_SW1_NORM_BYTES_AVAILABLE;
                 /**
                  * Make sure to fail when extended APDUs are used since they are
                  * unsupported here.
                  */
-                static_assert(UICC_DATA_MAX == UICC_DATA_MAX_SHRT,
+                static_assert(SWICC_DATA_MAX == SWICC_DATA_MAX_SHRT,
                               "Response buffer length might not fit in SW2 "
                               "if SW1 is 0x61");
                 /* Safe cast due to check inside the BER-TLV loop. */
                 res->sw2 = (uint8_t)bertlv_len;
                 res->data.len = 0U;
-                return UICC_RET_SUCCESS;
+                return SWICC_RET_SUCCESS;
             }
             else
             {
-                res->sw1 = UICC_APDU_SW1_CHER_UNK;
+                res->sw1 = SWICC_APDU_SW1_CHER_UNK;
                 res->sw2 = 0U;
                 res->data.len = 0U;
-                return UICC_RET_SUCCESS;
+                return SWICC_RET_SUCCESS;
             }
         }
     }
@@ -789,18 +795,18 @@ static uicc_ret_et apduh_select(uicc_st *const uicc_state,
 
 /**
  * @brief Handle the TERMINAL PROFILE command in the proprietary class 0x80.
- * @param uicc_state
+ * @param swicc_state
  * @param cmd
  * @param res
  * @param procedure_count
  * @return Return code.
  * @note
  */
-static uicc_apduh_ft apduh_terminal_profile;
-static uicc_ret_et apduh_terminal_profile(uicc_st *const uicc_state,
-                                          uicc_apdu_cmd_st const *const cmd,
-                                          uicc_apdu_res_st *const res,
-                                          uint32_t const procedure_count)
+static swicc_apduh_ft apduh_terminal_profile;
+static swicc_ret_et apduh_terminal_profile(swicc_st *const swicc_state,
+                                           swicc_apdu_cmd_st const *const cmd,
+                                           swicc_apdu_res_st *const res,
+                                           uint32_t const procedure_count)
 {
     /**
      * 1. P1 == 0x00.
@@ -808,10 +814,10 @@ static uicc_ret_et apduh_terminal_profile(uicc_st *const uicc_state,
      */
     if (cmd->hdr->p1 != 0x00 || cmd->hdr->p2 != 0x00)
     {
-        res->sw1 = UICC_APDU_SW1_CHER_P1P2_INFO;
+        res->sw1 = SWICC_APDU_SW1_CHER_P1P2_INFO;
         res->sw2 = 0x86; /* "Incorrect parameters P1 to P2" */
         res->data.len = 0U;
-        return UICC_RET_SUCCESS;
+        return SWICC_RET_SUCCESS;
     }
 
     /**
@@ -826,10 +832,10 @@ static uicc_ret_et apduh_terminal_profile(uicc_st *const uicc_state,
          */
         if (cmd->data->len != 0U)
         {
-            res->sw1 = UICC_APDU_SW1_CHER_UNK;
+            res->sw1 = SWICC_APDU_SW1_CHER_UNK;
             res->sw2 = 0U;
             res->data.len = 0U;
-            return UICC_RET_SUCCESS;
+            return SWICC_RET_SUCCESS;
         }
 
         /**
@@ -838,29 +844,29 @@ static uicc_ret_et apduh_terminal_profile(uicc_st *const uicc_state,
          */
         if (*cmd->p3 > 0)
         {
-            res->sw1 = UICC_APDU_SW1_PROC_ACK_ALL;
+            res->sw1 = SWICC_APDU_SW1_PROC_ACK_ALL;
             res->sw2 = 0U;
             res->data.len = *cmd->p3; /* Length of expected data. */
-            return UICC_RET_SUCCESS;
+            return SWICC_RET_SUCCESS;
         }
     }
 
     /* Terminal profile is ignored. */
-    res->sw1 = UICC_APDU_SW1_NORM_NONE;
+    res->sw1 = SWICC_APDU_SW1_NORM_NONE;
     res->sw2 = 0U;
     res->data.len = 0U;
-    return UICC_RET_SUCCESS;
+    return SWICC_RET_SUCCESS;
 }
 
-uicc_ret_et sim_apduh_demux(uicc_st *const uicc_state,
-                            uicc_apdu_cmd_st const *const cmd,
-                            uicc_apdu_res_st *const res,
-                            uint32_t const procedure_count)
+swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
+                             swicc_apdu_cmd_st const *const cmd,
+                             swicc_apdu_res_st *const res,
+                             uint32_t const procedure_count)
 {
-    uicc_ret_et ret = UICC_RET_APDU_UNHANDLED;
+    swicc_ret_et ret = SWICC_RET_APDU_UNHANDLED;
     switch (cmd->hdr->cla.type)
     {
-    case UICC_APDU_CLA_TYPE_INTERINDUSTRY:
+    case SWICC_APDU_CLA_TYPE_INTERINDUSTRY:
         switch (cmd->hdr->ins)
         {
         case 0xA4: /* SELECT */
@@ -869,14 +875,14 @@ uicc_ret_et sim_apduh_demux(uicc_st *const uicc_state,
              * fewer/different features and responds with proprietary BER-TLV
              * tags.
              */
-            ret = apduh_select(uicc_state, cmd, res, procedure_count);
+            ret = apduh_select(swicc_state, cmd, res, procedure_count);
             break;
         default:
             break;
         }
         break;
-    case UICC_APDU_CLA_TYPE_PROPRIETARY:
-        /* The UICC does not parse proprietary CLAs beyond just the type. */
+    case SWICC_APDU_CLA_TYPE_PROPRIETARY:
+        /* The swICC does not parse proprietary CLAs beyond just the type. */
         cmd->hdr->cla = sim_apdu_cmd_cla_parse(cmd->hdr->cla.raw);
 
         /**
@@ -890,13 +896,13 @@ uicc_ret_et sim_apduh_demux(uicc_st *const uicc_state,
                 (cmd->hdr->cla.raw & 0xF0) != 0x40 &&
                 (cmd->hdr->cla.raw & 0xF0) != 0x60)
             {
-                ret = apduh_select(uicc_state, cmd, res, procedure_count);
+                ret = apduh_select(swicc_state, cmd, res, procedure_count);
             }
             break;
         case 0x10: /* TERMINAL PROFILE */
             if (cmd->hdr->cla.raw == 0x80)
             {
-                ret = apduh_terminal_profile(uicc_state, cmd, res,
+                ret = apduh_terminal_profile(swicc_state, cmd, res,
                                              procedure_count);
             }
             break;

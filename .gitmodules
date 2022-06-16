@@ -1,9 +1,9 @@
 [submodule "lib/make-pal"]
 	path = lib/make-pal
 	url = git@github.com:tomasz-lisowski/make-pal.git
-[submodule "lib/uicc"]
-	path = lib/uicc
-	url = git@github.com:tomasz-lisowski/libuicc.git
+[submodule "lib/swicc"]
+	path = lib/swicc
+	url = git@github.com:tomasz-lisowski/libswicc.git
 [submodule "lib/scraw"]
 	path = lib/scraw
 	url = git@github.com:tomasz-lisowski/libscraw.git
