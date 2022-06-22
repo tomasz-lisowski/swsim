@@ -1,12 +1,453 @@
 #include "apduh.h"
 #include "apdu.h"
+#include "fs.h"
+#include "swicc/apdu.h"
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 #include <swicc/fs/common.h>
 
 /**
- * @brief Handle the SELECT command in the proprietary classes 0X, 4X, and 6X.
+ * @brief Handle the SELECT command in the proprietary class A0 of GSM 11.11.
+ * @param swicc_state
+ * @param cmd
+ * @param res
+ * @param procedure_count
+ * @return Return code.
+ * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.1 (command),
+ * sec.9.3 (coding), and 9.4 (status conditions).
+ * @note Some SW1 and SW2 values are non-ISO since they originate from the
+ * GSM 11.11 standard and seem to exist there and only there.
+ */
+static swicc_apduh_ft apduh_gsm_select;
+static swicc_ret_et apduh_gsm_select(swicc_st *const swicc_state,
+                                     swicc_apdu_cmd_st const *const cmd,
+                                     swicc_apdu_res_st *const res,
+                                     uint32_t const procedure_count)
+{
+    uint8_t const data_len_exp = 2U;
+    if (cmd->hdr->p1 != 0 || cmd->hdr->p2 != 0 || *cmd->p3 != data_len_exp)
+    {
+        res->sw1 = SWICC_APDU_SW1_CHER_P1P2;
+        res->sw2 = 0U;
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
+    /**
+     * Check if we only got Lc which means we need to send back a procedure
+     * byte.
+     */
+    if (procedure_count == 0U)
+    {
+        /**
+         * Unexpected because before sending a procedure, no data should have
+         * been received.
+         */
+        if (cmd->data->len != 0U)
+        {
+            res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+            res->sw2 = 0U;
+            res->data.len = 0U;
+            return SWICC_RET_SUCCESS;
+        }
+
+        /**
+         * If Lc is 0 it means data is absent so we can process what we got,
+         * otherwise we need more from the interface.
+         */
+        if (*cmd->p3 > 0)
+        {
+            res->sw1 = SWICC_APDU_SW1_PROC_ACK_ALL;
+            res->sw2 = 0U;
+            res->data.len = data_len_exp; /* Length of expected data. */
+            return SWICC_RET_SUCCESS;
+        }
+    }
+
+    /**
+     * The ACK ALL procedure was sent and we expected to receive all the data
+     * but did not receive the expected amount of data.
+     */
+    if (cmd->data->len != data_len_exp && procedure_count >= 1U)
+    {
+        res->sw1 = SWICC_APDU_SW1_CHER_LEN;
+        res->sw2 = 0x02; /* "Incorrect parameter P3" */
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
+    /* GSM SELECT can only select by FID. */
+    swicc_fs_id_kt const fid = ntohs(*(uint16_t *)cmd->data->b);
+
+    /* Perform requested operation. */
+    {
+        swicc_ret_et const ret_select =
+            swicc_va_select_file_id(&swicc_state->fs, fid);
+        if (ret_select == SWICC_RET_FS_NOT_FOUND)
+        {
+            res->sw1 = 0x94; /* "File ID not found" */
+            res->sw2 = 0x04;
+            res->data.len = 0U;
+            return SWICC_RET_SUCCESS;
+        }
+        else if (ret_select != SWICC_RET_SUCCESS)
+        {
+            res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+            res->sw2 = 0U;
+            res->data.len = 0U;
+            return SWICC_RET_SUCCESS;
+        }
+
+        swicc_fs_file_st *const file_selected = &swicc_state->fs.va.cur_file;
+        switch (file_selected->hdr_item.type)
+        {
+        case SWICC_FS_ITEM_TYPE_FILE_MF:
+        case SWICC_FS_ITEM_TYPE_FILE_ADF:
+        /**
+         * @brief Not sure if this operation can select applications.
+         */
+        case SWICC_FS_ITEM_TYPE_FILE_DF: {
+            /* Response parameters data. */
+            uint32_t const mem_free =
+                htonl(UINT32_MAX - swicc_state->fs.va.cur_tree->len);
+            /**
+             * "Total amount of memory of the selected directory which is not
+             * allocated to any of the DFs or EFs under the selected directory."
+             * Safe cast due to check in same statement.
+             */
+            uint16_t const mem_free_short =
+                mem_free > UINT16_MAX ? UINT16_MAX : (uint16_t)mem_free;
+            /* "File ID." */
+            uint16_t const file_id = htons(fid);
+            /* "Type of file." */
+            uint8_t file_type;
+            switch (file_selected->hdr_item.type)
+            {
+            case SWICC_FS_ITEM_TYPE_FILE_MF:
+                file_type = 0x01;
+                break;
+            case SWICC_FS_ITEM_TYPE_FILE_ADF:
+            case SWICC_FS_ITEM_TYPE_FILE_DF:
+                file_type = 0x02;
+                break;
+            default:
+                __builtin_unreachable();
+            }
+            /* Length of the GSM specific data. */
+            uint8_t const gsm_data_len =
+                10U; /* Everything except the last portion which is optional. */
+
+            /* GSM specific data. */
+            /* "File characteristics." */
+            /**
+             * LSB>MSB
+             *    1b Clock stop = 1 (clock stop allowed)
+             *  + 1b Authentication algorithm clock frequency = 1 (13/4 MHz)
+             *  + 1b Clock stop = 0 (high not preferred)
+             *  + 1b Clock stop = 0 (low not preferred)
+             *  + 1b 0 (from GSM 11.12 @todo Look into GSM 11.12)
+             *  + 2b RFU = 00
+             *  + 1b CHV1 = 1 = (disabled)
+             *
+             * @note Clock stop is allowed and has no preference on level.
+             */
+            uint8_t const file_characteristic = 0b10000011;
+            uint32_t df_child_count_tmp;
+            uint32_t ef_child_count_tmp;
+            if (sim_fs_file_child_count(
+                    swicc_state->fs.va.cur_tree, file_selected, false,
+                    &df_child_count_tmp, &ef_child_count_tmp) != 0 ||
+                df_child_count_tmp > UINT8_MAX ||
+                ef_child_count_tmp > UINT8_MAX)
+            {
+                /**
+                 * @todo NV modified but can't indicate this, not sure what
+                 * to do here.
+                 */
+                res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+                res->sw2 = 0U;
+                res->data.len = 0U;
+                return SWICC_RET_SUCCESS;
+            }
+            /**
+             * "Number of DFs which are a direct child of the current
+             * directory."
+             * Safe cast due to check in 'if' before.
+             */
+            uint8_t const df_child_count = (uint8_t)df_child_count_tmp;
+            /**
+             * "Number of EFs which are a direct child of the current
+             * directory."
+             * Safe cast due to check in 'if' before.
+             */
+            uint8_t const ef_child_count = (uint8_t)ef_child_count_tmp;
+            /**
+             * "Number of CHVs, UNBLOCK CHVs and administrative codes."
+             */
+            /**
+             * Status of a secret code:
+             * LSB>MSB
+             *   4b Number of false presentations remaining = 0
+             * + 3b RFU = 0
+             * + 1b Secret code initialized = 1 (initialized)
+             */
+            uint8_t const code_count = 0U; /* No CHVs. */
+            /* "CHV1 status." */
+            uint8_t const chv1_status = 0b10000000;
+            /* "UNBLOCK CHV1 status." */
+            uint8_t const chv1_unblock_status = 0b10000000;
+            /* "CHV2." */
+            uint8_t const chv2_status = 0b10000000;
+            /* "UNBLOCK CHV2." */
+            uint8_t const chv2_unblock_status = 0b10000000;
+
+            /* Create the response in the response buffer. */
+            {
+                /**
+                 * Using response buffer as temporary storage for complete
+                 * response.
+                 */
+                memset(&res->data.b[0U], 0U, 2U);
+                memcpy(&res->data.b[2U], &mem_free_short, 2U);
+                memcpy(&res->data.b[4U], &file_id, 2U);
+                memcpy(&res->data.b[6U], &file_type, 1U);
+                memset(&res->data.b[7U], 0U, 5U);
+                memcpy(&res->data.b[12U], &gsm_data_len, 1U);
+                memcpy(&res->data.b[13U], &file_characteristic, 1U);
+                memcpy(&res->data.b[14U], &df_child_count, 1U);
+                memcpy(&res->data.b[15U], &ef_child_count, 1U);
+                memcpy(&res->data.b[16U], &code_count, 1U);
+                memset(&res->data.b[17U], 0, 1U);
+                memcpy(&res->data.b[18U], &chv1_status, 1U);
+                memcpy(&res->data.b[19U], &chv1_unblock_status, 1U);
+                memcpy(&res->data.b[20U], &chv2_status, 1U);
+                memcpy(&res->data.b[21U], &chv2_unblock_status, 1U);
+                res->data.len = 22U;
+            }
+            break;
+        }
+        case SWICC_FS_ITEM_TYPE_FILE_EF_TRANSPARENT:
+        case SWICC_FS_ITEM_TYPE_FILE_EF_LINEARFIXED:
+        case SWICC_FS_ITEM_TYPE_FILE_EF_CYCLIC: {
+            /**
+             * "File size (for transparent EF: the length of the body part of
+             * the EF) (for linear fixed or cyclic EF: record length multiplied
+             * by the number of records of the EF)."
+             */
+            uint16_t file_size;
+            uint8_t rcrd_length;
+            if (file_selected->hdr_item.type ==
+                SWICC_FS_ITEM_TYPE_FILE_EF_TRANSPARENT)
+            {
+                /* Safe cast since same statement checks for overflow. */
+                file_size = file_selected->data_size > UINT16_MAX
+                                ? UINT16_MAX
+                                : (uint16_t)file_selected->data_size;
+            }
+            else
+            {
+                uint32_t rcrd_cnt;
+                swicc_ret_et const ret_rcrd_cnt = swicc_disk_file_rcrd_cnt(
+                    swicc_state->fs.va.cur_tree, file_selected, &rcrd_cnt);
+                if (ret_rcrd_cnt != SWICC_RET_SUCCESS || rcrd_cnt > UINT16_MAX)
+                {
+                    /**
+                     * @todo NV modified but can't indicate this, not sure what
+                     * to do here.
+                     */
+                    res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+                    res->sw2 = 0U;
+                    res->data.len = 0U;
+                    return SWICC_RET_SUCCESS;
+                }
+                uint8_t const rcrd_size =
+                    file_selected->hdr_item.type ==
+                            SWICC_FS_ITEM_TYPE_FILE_EF_LINEARFIXED
+                        ? file_selected->hdr_spec.ef_linearfixed.rcrd_size
+                        : file_selected->hdr_spec.ef_cyclic.rcrd_size;
+                /**
+                 * Safe cast since record count is <= UINT16_MAX and record size
+                 * is uint8 so can't overflow.
+                 */
+                file_size = (uint16_t)(rcrd_cnt * rcrd_size);
+                rcrd_length = rcrd_size;
+            }
+            /* "File ID." */
+            uint16_t const file_id = file_selected->hdr_file.id;
+            /* "Type of file." */
+            uint8_t const file_type = 0x04;
+            /**
+             * Byte 7 (index 7, standard counts from 1 so there it's byte 8) is
+             * RFU for linear-fixed and transparent EFs but for cyclic all bits
+             * except b6 (index 6, in standard they index bits from 1 so it's b7
+             * there) are RFU. b6=1 means INCREASE is allowed on this file.
+             */
+            uint8_t const b7 = file_selected->hdr_item.type ==
+                                       SWICC_FS_ITEM_TYPE_FILE_EF_CYCLIC
+                                   ? 0x01
+                                   : 0x00;
+            /* "Access conditions." */
+            uint8_t const access_cond[3U] = {0x00, 0x00, 0x00};
+            /* "File status." */
+            /**
+             * All bits except b0 are RFU and shall be 0. b0=0 if invalidated,
+             * b0=0, if not invalidated b0=1.
+             */
+            uint8_t const file_status =
+                file_selected->hdr_item.lcs == SWICC_FS_LCS_OPER_ACTIV ? 0x01
+                                                                       : 0x00;
+            /* Length of the remainder of the response. */
+            uint8_t const data_extra_len = 2U; /* Everything. */
+            /* "Structure of EF." */
+            uint8_t ef_structure;
+            switch (file_selected->hdr_item.type)
+            {
+            case SWICC_FS_ITEM_TYPE_FILE_EF_TRANSPARENT:
+                ef_structure = 0x00;
+                break;
+            case SWICC_FS_ITEM_TYPE_FILE_EF_LINEARFIXED:
+                ef_structure = 0x01;
+                break;
+            case SWICC_FS_ITEM_TYPE_FILE_EF_CYCLIC:
+                ef_structure = 0x03;
+                break;
+            default:
+                __builtin_unreachable();
+            }
+            rcrd_length = 0;
+
+            /* Create the response in the response buffer. */
+            {
+                /**
+                 * Using response buffer as temporary storage for complete
+                 * response.
+                 */
+                memset(&res->data.b[0U], 0U, 2U);
+                memcpy(&res->data.b[2U], &file_size, 2U);
+                memcpy(&res->data.b[4U], &file_id, 2U);
+                memcpy(&res->data.b[6U], &file_type, 1U);
+                memcpy(&res->data.b[7U], &b7, 1U);
+                memcpy(&res->data.b[8U], access_cond, 3U);
+                memcpy(&res->data.b[11U], &file_status, 1U);
+                memcpy(&res->data.b[12U], &data_extra_len, 1U);
+                memcpy(&res->data.b[13U], &ef_structure, 1U);
+                memcpy(&res->data.b[14U], &rcrd_length, 1U);
+                res->data.len = 15U;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        /* Copy response to the GET RESPONSE buffer. */
+        if (swicc_apdu_rc_enq(&swicc_state->apdu_rc, res->data.b,
+                              res->data.len) != SWICC_RET_SUCCESS)
+        {
+            /**
+             * @todo NV modified but can't indicate this, not sure what
+             * to do here.
+             */
+            res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+            res->sw2 = 0U;
+            res->data.len = 0U;
+            return SWICC_RET_SUCCESS;
+        }
+
+        /* "Length 'XX' of the response data." where 'XX' is SW2. */
+        res->sw1 = 0x9F;
+        res->sw2 = (uint8_t)res->data.len; /* Length of response. */
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+}
+
+/**
+ * @brief Handle the GET RESPONSE command in the proprietary class A0 of
+ * GSM 11.11.
+ * @param swicc_state
+ * @param cmd
+ * @param res
+ * @param procedure_count
+ * @return Return code.
+ * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.18 (command),
+ * sec.9.3 (coding), and 9.4 (status conditions).
+ * @note Some SW1 and SW2 values are non-ISO since they originate from the
+ * GSM 11.11 standard and seem to exist there and only there.
+ */
+static swicc_apduh_ft apduh_gsm_res_get;
+static swicc_ret_et apduh_gsm_res_get(swicc_st *const swicc_state,
+                                      swicc_apdu_cmd_st const *const cmd,
+                                      swicc_apdu_res_st *const res,
+                                      uint32_t const procedure_count)
+{
+    if (cmd->hdr->p1 != 0 || cmd->hdr->p2 != 0)
+    {
+        res->sw1 = SWICC_APDU_SW1_CHER_P1P2;
+        res->sw2 = 0U;
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
+    /**
+     * Check if we only got Le which means we need to send back a procedure
+     * byte.
+     */
+    if (procedure_count == 0U)
+    {
+        /**
+         * Unexpected because before sending a procedure, no data should have
+         * been received.
+         */
+        if (cmd->data->len != 0U)
+        {
+            res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+            res->sw2 = 0U;
+            res->data.len = 0U;
+            return SWICC_RET_SUCCESS;
+        }
+
+        res->sw1 = SWICC_APDU_SW1_PROC_ACK_ALL;
+        res->sw2 = 0U;
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
+    /**
+     * The ACK ALL procedure was sent and we expected to receive all the data
+     * but did not receive the expected amount of data.
+     */
+    if (cmd->data->len != 0U && procedure_count >= 1U)
+    {
+        res->sw1 = SWICC_APDU_SW1_CHER_LEN;
+        res->sw2 = 0x02; /* "Incorrect parameter P3" */
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
+    uint32_t data_req_len = *cmd->p3;
+    if (swicc_apdu_rc_deq(&swicc_state->apdu_rc, res->data.b, &data_req_len) !=
+            SWICC_RET_SUCCESS ||
+        data_req_len != *cmd->p3)
+    {
+        /* Failed to get the requested data. */
+        res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+        res->sw2 = 0U;
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
+    res->sw1 = SWICC_APDU_SW1_NORM_NONE;
+    res->sw2 = 0U;
+    res->data.len = *cmd->p3;
+    return SWICC_RET_SUCCESS;
+}
+
+/**
+ * @brief Handle the SELECT command in the proprietary classes 0X, 4X, and 6X of
+ * ETSI TS 102 221 V16.4.0.
  * @param swicc_state
  * @param cmd
  * @param res
@@ -15,11 +456,11 @@
  * @note As described in 3GPP 31.101 V17.0.0 pg.19 sec.11.1.1.
  * (and ETSI TS 102 221 V16.4.0 pg.84 sec.11.1.1.)
  */
-static swicc_apduh_ft apduh_select;
-static swicc_ret_et apduh_select(swicc_st *const swicc_state,
-                                 swicc_apdu_cmd_st const *const cmd,
-                                 swicc_apdu_res_st *const res,
-                                 uint32_t const procedure_count)
+static swicc_apduh_ft apduh_3gpp_select;
+static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
+                                      swicc_apdu_cmd_st const *const cmd,
+                                      swicc_apdu_res_st *const res,
+                                      uint32_t const procedure_count)
 {
     enum meth_e
     {
@@ -210,7 +651,7 @@ static swicc_ret_et apduh_select(swicc_st *const swicc_state,
             else
             {
                 ret_select = swicc_va_select_file_id(
-                    &swicc_state->fs, htons(*(swicc_fs_id_kt *)cmd->data->b));
+                    &swicc_state->fs, ntohs(*(swicc_fs_id_kt *)cmd->data->b));
             }
             break;
         case METH_DF_NAME:
@@ -804,11 +1245,10 @@ static swicc_ret_et apduh_select(swicc_st *const swicc_state,
  * @return Return code.
  * @note
  */
-static swicc_apduh_ft apduh_terminal_profile;
-static swicc_ret_et apduh_terminal_profile(swicc_st *const swicc_state,
-                                           swicc_apdu_cmd_st const *const cmd,
-                                           swicc_apdu_res_st *const res,
-                                           uint32_t const procedure_count)
+static swicc_apduh_ft apduh_3gpp_terminal_profile;
+static swicc_ret_et apduh_3gpp_terminal_profile(
+    swicc_st *const swicc_state, swicc_apdu_cmd_st const *const cmd,
+    swicc_apdu_res_st *const res, uint32_t const procedure_count)
 {
     /**
      * 1. P1 == 0x00.
@@ -877,7 +1317,7 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
              * fewer/different features and responds with proprietary BER-TLV
              * tags.
              */
-            ret = apduh_select(swicc_state, cmd, res, procedure_count);
+            ret = apduh_3gpp_select(swicc_state, cmd, res, procedure_count);
             break;
         default:
             break;
@@ -894,18 +1334,32 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
         switch (cmd->hdr->ins)
         {
         case 0xA4: /* SELECT */
-            if ((cmd->hdr->cla.raw & 0xF0) != 0x00 &&
-                (cmd->hdr->cla.raw & 0xF0) != 0x40 &&
-                (cmd->hdr->cla.raw & 0xF0) != 0x60)
+            /* ETSI + 3GPP */
+            if ((cmd->hdr->cla.raw & 0xF0) == 0x00 ||
+                (cmd->hdr->cla.raw & 0xF0) == 0x40 ||
+                (cmd->hdr->cla.raw & 0xF0) == 0x60)
             {
-                ret = apduh_select(swicc_state, cmd, res, procedure_count);
+                ret = apduh_3gpp_select(swicc_state, cmd, res, procedure_count);
+            }
+            /* GSM */
+            else if (cmd->hdr->cla.raw == 0xA0)
+            {
+                ret = apduh_gsm_select(swicc_state, cmd, res, procedure_count);
             }
             break;
         case 0x10: /* TERMINAL PROFILE */
+            /* ETSI + 3GPP */
             if (cmd->hdr->cla.raw == 0x80)
             {
-                ret = apduh_terminal_profile(swicc_state, cmd, res,
-                                             procedure_count);
+                ret = apduh_3gpp_terminal_profile(swicc_state, cmd, res,
+                                                  procedure_count);
+            }
+            break;
+        case 0xC0: /* GET RESPONSE */
+            /* GSM */
+            if (cmd->hdr->cla.raw == 0xA0)
+            {
+                ret = apduh_gsm_res_get(swicc_state, cmd, res, procedure_count);
             }
             break;
         default:
