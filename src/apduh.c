@@ -1,8 +1,9 @@
 #include "apduh.h"
 #include "apdu.h"
-#include "swicc/fs/common.h"
+#include <netinet/in.h>
 #include <stddef.h>
 #include <string.h>
+#include <swicc/fs/common.h>
 
 /**
  * @brief Handle the SELECT command in the proprietary classes 0X, 4X, and 6X.
@@ -128,11 +129,11 @@ static swicc_ret_et apduh_select(swicc_st *const swicc_state,
     }
 
     /**
-     * 1. When P1 = 0x00, P3 = 0, P2 shall be 0xC0.
+     * 1. When P1 = 0x00, P3 = 0, P2 shall be 0x0C.
      * 2. b1 and b2 of P2 shall be 0 when P1 != 0x04.
      * 3. ADF occurrence shall not be RFU.
      */
-    if ((cmd->hdr->p1 == 0x00 && *cmd->p3 == 0U && cmd->hdr->p2 != 0xC0) ||
+    if ((cmd->hdr->p1 == 0x00 && *cmd->p3 == 0U && cmd->hdr->p2 != 0x0C) ||
         (cmd->hdr->p1 != 0x04 && (cmd->hdr->p2 & 0b00000011) != 0U) ||
         occ_rfu == true)
     {
@@ -209,8 +210,7 @@ static swicc_ret_et apduh_select(swicc_st *const swicc_state,
             else
             {
                 ret_select = swicc_va_select_file_id(
-                    &swicc_state->fs,
-                    __builtin_bswap16(*(swicc_fs_id_kt *)cmd->data->b));
+                    &swicc_state->fs, htons(*(swicc_fs_id_kt *)cmd->data->b));
             }
             break;
         case METH_DF_NAME:
@@ -384,12 +384,10 @@ static swicc_ret_et apduh_select(swicc_st *const swicc_state,
 
             /* Create data for BER-TLV DOs. */
 
-            uint32_t const data_size_be =
-                __builtin_bswap32(file_selected->data_size);
+            uint32_t const data_size_be = htonl(file_selected->data_size);
             uint32_t const data_size_tot_be =
-                __builtin_bswap32(file_selected->hdr_item.size);
-            uint16_t const data_id_be =
-                __builtin_bswap16(file_selected->hdr_file.id);
+                htonl(file_selected->hdr_item.size);
+            uint16_t const data_id_be = htons(file_selected->hdr_file.id);
             uint8_t const data_sid = file_selected->hdr_file.sid;
             /**
              * @warning The ATR and the UICC characteristics need to indicate
@@ -419,8 +417,8 @@ static swicc_ret_et apduh_select(swicc_st *const swicc_state,
                          3GPP 31.101 V17.0.0 pg.20 sec.11.1.1.4.6, a value of
                          1MHz will be assumed. */
             };
-            uint32_t const data_mem_available_be = __builtin_bswap32(
-                UINT32_MAX - swicc_state->fs.va.cur_tree->len);
+            uint32_t const data_mem_available_be =
+                htonl(UINT32_MAX - swicc_state->fs.va.cur_tree->len);
             uint8_t const data_file_details[1U] = {
                 0b00000001, /**
                              * LSB>MSB
@@ -429,14 +427,18 @@ static swicc_ret_et apduh_select(swicc_st *const swicc_state,
                              *  + 7b RFU        = 0000000
                              */
             };
-            uint16_t const data_file_size_reserved_be = __builtin_bswap16(
-                0x0000); /* Number of data bytes reserved for selected file that
-                            cannot be allocated by any other entity. */
-            uint32_t const data_file_size_max_be =
-                UINT32_MAX -
-                1024U /* Larger than any header with lots of extra margin. */
-                ; /* File size that shall not be exceeded excluding structural
-                     information for the file. */
+            /**
+             * Number of data bytes reserved for selected file that cannot be
+             * allocated by any other entity.
+             */
+            uint16_t const data_file_size_reserved_be = htons(0x0000);
+            /**
+             * File size that shall not be exceeded excluding structural
+             * information for the file.
+             * @note Setting this to a value larger than any header with lots of
+             * extra margin.
+             */
+            uint32_t const data_file_size_max_be = htonl(UINT32_MAX - 1024U);
             uint8_t const data_sys_cmd_support[1U] = {
                 0b00000000, /* Supported commands. 0x00 = TERMINAL CAPABILITY
                                not supported (indicated by LSB and rest of bits
