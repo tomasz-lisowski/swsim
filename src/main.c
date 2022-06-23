@@ -15,10 +15,20 @@ static void sig_exit_handler(__attribute__((unused)) int signum)
 
 static void print_usage(char const *const arg0)
 {
-    printf("Usage: %s [--help | -h] <--ip server_ip | -i server_ip> "
-           "<--port server_port | -p server_port> <--filesystem "
-           "path_to_fs_json | -f path_to_fs_json>\n",
-           arg0);
+    // clang-format off
+    printf("Usage: %s"
+        "\n ["CLR_KND("--help")" | "CLR_KND("-h")"]"
+        "\n <"CLR_KND("--ip")" "CLR_VAL("ip")" | "CLR_KND("-i")" "CLR_VAL("ip")">"
+        "\n <"CLR_KND("--port")" "CLR_VAL("port")" | "CLR_KND("-p")" "CLR_VAL("port")">"
+        "\n <"CLR_KND("--fs-load")" "CLR_VAL("path")" | "CLR_KND("-l")" "CLR_VAL("path")">"
+        "\n ["CLR_KND("--fs-save")" "CLR_VAL("path")" | "CLR_KND("-s")" "CLR_VAL("path")"]"
+        "\n"
+        "\n - IP and port form the address of the server that swSIM will connect to."
+        "\n - FS load is for loading the swICC JSON definition of a FS."
+        "\n - FS save is for saving the generated swICC FS to disk."
+        "\n",
+        arg0);
+    // clang-format on
 }
 
 int32_t main(int32_t const argc, char *const argv[argc])
@@ -65,18 +75,19 @@ int32_t main(int32_t const argc, char *const argv[argc])
             swiccfs_path = optarg;
             break;
         case '?':
-            print_usage(argv[0U]);
             break;
         }
     }
     if (optind < argc)
     {
-        printf("Invalid argv-elements: ");
+        printf("%s: invalid arguments -- '", argv[0U]);
         while (optind < argc)
         {
-            printf("%s ", argv[optind++]);
+            printf("%s%c", argv[optind], optind + 1 == argc ? '\0' : ' ');
+            optind++;
         }
-        printf("\n");
+        printf("'\n");
+        print_usage(argv[0U]);
         exit(EXIT_FAILURE);
     }
     if (server_ip == NULL)
@@ -100,7 +111,7 @@ int32_t main(int32_t const argc, char *const argv[argc])
     printf("swSIM:"
            "\n  Load JSON FS from '%s'."
            "\n  Save swICC FS at '%s'."
-           "\n  Connect to %s:%s.\n\n",
+           "\n  Connect to %s:%s.\n",
            filesystem_path, swiccfs_path == NULL ? "nowhere" : swiccfs_path,
            server_ip, server_port);
 
@@ -113,6 +124,7 @@ int32_t main(int32_t const argc, char *const argv[argc])
             ret = swicc_net_client_create(&client_ctx, server_ip, server_port);
             if (ret == SWICC_RET_SUCCESS)
             {
+                printf("Press ctrl-c to exit.\n");
                 ret = swicc_net_client(&sim_ctx.swicc, &client_ctx);
                 if (ret != SWICC_RET_SUCCESS)
                 {
