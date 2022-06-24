@@ -212,7 +212,8 @@ static swicc_ret_et apduh_gsm_select(swicc_st *const swicc_state,
                 memcpy(&res->data.b[19U], &chv1_unblock_status, 1U);
                 memcpy(&res->data.b[20U], &chv2_status, 1U);
                 memcpy(&res->data.b[21U], &chv2_unblock_status, 1U);
-                res->data.len = 22U;
+                memset(&res->data.b[22U], 0U, 1U);
+                res->data.len = 23U;
             }
             break;
         }
