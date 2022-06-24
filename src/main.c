@@ -1,4 +1,5 @@
-#include "sim.h"
+#include "pin.h"
+#include "swsim.h"
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -115,8 +116,11 @@ int32_t main(int32_t const argc, char *const argv[argc])
            filesystem_path, swiccfs_path == NULL ? "nowhere" : swiccfs_path,
            server_ip, server_port);
 
-    sim_st sim_ctx = {0U};
-    if (sim_init(&sim_ctx, filesystem_path, swiccfs_path) == 0)
+    swsim_st swsim_state = {0U};
+    swicc_st swicc_state = {0U};
+
+    if (swsim_init(&swsim_state, &swicc_state, filesystem_path, swiccfs_path) ==
+        0)
     {
         swicc_ret_et ret = swicc_net_client_sig_register(sig_exit_handler);
         if (ret == SWICC_RET_SUCCESS)
@@ -125,7 +129,7 @@ int32_t main(int32_t const argc, char *const argv[argc])
             if (ret == SWICC_RET_SUCCESS)
             {
                 printf("Press ctrl-c to exit.\n");
-                ret = swicc_net_client(&sim_ctx.swicc, &client_ctx);
+                ret = swicc_net_client(&swicc_state, &client_ctx);
                 if (ret != SWICC_RET_SUCCESS)
                 {
                     printf("Failed to run network client.\n");
@@ -141,7 +145,7 @@ int32_t main(int32_t const argc, char *const argv[argc])
         {
             printf("Failed to register signal handler.\n");
         }
-        swicc_terminate(&sim_ctx.swicc);
+        swicc_terminate(&swicc_state);
     }
     return EXIT_SUCCESS;
 }
