@@ -11,6 +11,11 @@
 #include <string.h>
 #include <swicc/fs/common.h>
 
+/* Toggle to 1 to send additional data in SELECT response. */
+#define SELECT_3GPP_MEM_TOT 0
+#define SELECT_3GPP_SYS_CMD 0
+#define SELECT_3GPP_UICC_ENV_COND 0
+
 /**
  * @brief Handle the SELECT command in the proprietary class A0 of GSM 11.11.
  * @param swicc_state
@@ -683,7 +688,7 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                  * All security attributes are indicated by reference so these
                  * tags are not used.
                  */
-                // 0x8C, /* '62': Security attributes (compact). */
+                0x8C, /* '62': Security attributes (compact). */
                 // 0xAB, /* '62': Security attributes (expanded). */
             };
             static uint32_t const tags_count = sizeof(tags) / sizeof(tags[0U]);
@@ -704,8 +709,10 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
             /* Create data for BER-TLV DOs. */
 
             uint32_t const data_size_be = htobe32(file_selected->data_size);
+#if SELECT_3GPP_MEM_TOT == 1
             uint32_t const data_size_tot_be =
                 htobe32(file_selected->hdr_item.size);
+#endif
             uint16_t const data_id_be = htobe16(file_selected->hdr_file.id);
             uint8_t const data_sid = file_selected->hdr_file.sid;
             /**
@@ -758,11 +765,14 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
              * extra margin.
              */
             uint32_t const data_file_size_max_be = htobe32(UINT32_MAX - 1024U);
+#if SELECT_3GPP_SYS_CMD == 1
             uint8_t const data_sys_cmd_support[1U] = {
                 0b00000000, /* Supported commands. 0x00 = TERMINAL CAPABILITY
                                not supported (indicated by LSB and rest of bits
                                is RFU). */
             };
+#endif
+#if SELECT_3GPP_UICC_ENV_COND == 1
             uint8_t const data_uicc_env_cond[1U] = {
                 0b00001011, /**
                              * LSB>MSB
@@ -771,14 +781,26 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                              *  + 4b RFU               = 0000
                              */
             };
-            uint8_t const data_sec_attr[3U] = {
-                0x06, /* B1 of EF ARR FID. */
-                0x6F, /* B0 of EF ARR FID. */
-                0x00, /* Record number in EF ARR that contains the security
-                         attributes. */
+#endif
+            uint8_t const data_sec_attr_compact[] = {
+                0b01111111, /* Access Mode (AM): All operations allowed. */
+                /**
+                 * The remaining 0x00 bytes all indicate an ALWAYS security
+                 * condition (SC) for each of the 1 bits of AM.
+                 * The meaning of each ALWAYS condition changes based on type of
+                 * thing being selected but that is ignored as everything is
+                 * allowed always.
+                 */
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
             };
             uint8_t const data_pin_status_ps_do[] = {
-                0b10000000, /**
+                0b01110000, /**
                              * ETSI TS 102 221 V16.4.0 sec.9.5.2.
                              * LSB>MSB
                              * PIN enabled/disabled
@@ -786,25 +808,28 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                              *  + 1b key 7 = 0 (disabled)
                              *  + 1b key 6 = 0 (disabled)
                              *  + 1b key 5 = 0 (disabled)
-                             *  + 1b key 4 = 0 (disabled)
-                             *  + 1b key 3 = 0 (disabled)
-                             *  + 1b key 2 = 0 (disabled)
-                             *  + 1b key 1 = 1 (enabled)
+                             *  + 1b key 4 = 1 (enabled)
+                             *  + 1b key 3 = 1 (enabled)
+                             *  + 1b key 2 = 1 (enabled)
+                             *  + 1b key 1 = 0 (disabled)
                              */
             };
-            uint8_t const data_pin_status_usage_qualif[1U][1U] = {
+            uint8_t const data_pin_status_key_ref[4U][1U] = {
+                /**
+                 * The references are defined in ETSI TS 102 221 V16.4.0
+                 * sec.9.5.1 table.9.3.
+                 */
                 {
-                    0x08, /* b4 = 1 means "use the PIN for verification (Key
-                             Reference data user knowledge based)". This is the
-                             usage qualifier needed for the universal PIN.
-                             ETSI TS 102 221 V16.4.0 sec.9.5.1 table.9.3. */
+                    0x01, /* PIN Appl 1 */
                 },
-            };
-            uint8_t const data_pin_status_key_ref[1U][1U] = {
                 {
-                    0x11, /* '11' is a special value reserved for the universal
-                             PIN.
-                             ETSI TS 102 221 V16.4.0 sec.9.5.1 table.9.3. */
+                    0x81, /* Second PIN Appl 1 */
+                },
+                {
+                    0x0A, /* ADM1 */
+                },
+                {
+                    0x0B, /* ADM2 */
                 },
             };
             uint8_t lcs_be;
@@ -869,12 +894,14 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                                 SWICC_RET_SUCCESS)
                          : false) ||
 
+#if SELECT_3GPP_MEM_TOT == 1
                     /* Total file size. */
                     swicc_dato_bertlv_enc_data(
                         &enc_fcp, (uint8_t *)&data_size_tot_be,
                         sizeof(data_size_tot_be)) != SWICC_RET_SUCCESS ||
                     swicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[2U]) !=
                         SWICC_RET_SUCCESS ||
+#endif
 
                     /* File size for EFs. */
                     (SWICC_FS_FILE_EF_CHECK(file_selected)
@@ -892,7 +919,37 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                                                              &enc_pin_status) !=
                                 SWICC_RET_SUCCESS ||
 
-                            /* Key reference 1. */
+                            /* ADM2. */
+                            swicc_dato_bertlv_enc_data(
+                                &enc_pin_status,
+                                (uint8_t *)&data_pin_status_key_ref[3U],
+                                sizeof(data_pin_status_key_ref[3U])) !=
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_pin_status,
+                                                      &bertlv_tags[4U]) !=
+                                SWICC_RET_SUCCESS ||
+
+                            /* ADM1. */
+                            swicc_dato_bertlv_enc_data(
+                                &enc_pin_status,
+                                (uint8_t *)&data_pin_status_key_ref[2U],
+                                sizeof(data_pin_status_key_ref[2U])) !=
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_pin_status,
+                                                      &bertlv_tags[4U]) !=
+                                SWICC_RET_SUCCESS ||
+
+                            /* Second PIN Appl 1. */
+                            swicc_dato_bertlv_enc_data(
+                                &enc_pin_status,
+                                (uint8_t *)&data_pin_status_key_ref[1U],
+                                sizeof(data_pin_status_key_ref[1U])) !=
+                                SWICC_RET_SUCCESS ||
+                            swicc_dato_bertlv_enc_hdr(&enc_pin_status,
+                                                      &bertlv_tags[4U]) !=
+                                SWICC_RET_SUCCESS ||
+
+                            /* PIN Appl 1. */
                             swicc_dato_bertlv_enc_data(
                                 &enc_pin_status,
                                 (uint8_t *)&data_pin_status_key_ref[0U],
@@ -900,16 +957,6 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                                 SWICC_RET_SUCCESS ||
                             swicc_dato_bertlv_enc_hdr(&enc_pin_status,
                                                       &bertlv_tags[4U]) !=
-                                SWICC_RET_SUCCESS ||
-
-                            /* Usage qualifier 1. */
-                            swicc_dato_bertlv_enc_data(
-                                &enc_pin_status,
-                                (uint8_t *)&data_pin_status_usage_qualif[0U],
-                                sizeof(data_pin_status_usage_qualif[0U])) !=
-                                SWICC_RET_SUCCESS ||
-                            swicc_dato_bertlv_enc_hdr(&enc_pin_status,
-                                                      &bertlv_tags[13U]) !=
                                 SWICC_RET_SUCCESS ||
 
                             /* PS_DO. */
@@ -930,11 +977,11 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                                 SWICC_RET_SUCCESS)
                          : false) ||
 
-                    /* Security attributes (reference). */
+                    /* Security attributes (compact). */
                     swicc_dato_bertlv_enc_data(
-                        &enc_fcp, (uint8_t *)&data_sec_attr,
-                        sizeof(data_sec_attr)) != SWICC_RET_SUCCESS ||
-                    swicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[11U]) !=
+                        &enc_fcp, (uint8_t *)&data_sec_attr_compact,
+                        sizeof(data_sec_attr_compact)) != SWICC_RET_SUCCESS ||
+                    swicc_dato_bertlv_enc_hdr(&enc_fcp, &bertlv_tags[16U]) !=
                         SWICC_RET_SUCCESS ||
 
                     /* Life cycle status. */
@@ -948,6 +995,7 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                     swicc_dato_bertlv_enc_nstd_start(
                         &enc_fcp, &enc_prop_info) != SWICC_RET_SUCCESS ||
 
+#if SELECT_3GPP_UICC_ENV_COND == 1
                     /* Specific UICC environmental conditions for MF.  */
                     (file_selected->hdr_item.type == SWICC_FS_ITEM_TYPE_FILE_MF
                          ? (swicc_dato_bertlv_enc_data(
@@ -958,7 +1006,9 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                                                       &bertlv_tags[9U]) !=
                                 SWICC_RET_SUCCESS)
                          : false) ||
+#endif
 
+#if SELECT_3GPP_SYS_CMD == 1
                     /* Supported system commands for folders. */
                     (SWICC_FS_FILE_FOLDER_CHECK(file_selected)
                          ? (swicc_dato_bertlv_enc_data(
@@ -970,6 +1020,7 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                                                       &bertlv_tags[8U]) !=
                                 SWICC_RET_SUCCESS)
                          : false) ||
+#endif
 
                     /**
                      * File details, reserved file size, and maximum file size
