@@ -707,8 +707,16 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
             }
 
             /* Create data for BER-TLV DOs. */
-
-            uint32_t const data_size_be = htobe32(file_selected->data_size);
+            if (file_selected->data_size > UINT16_MAX)
+            {
+                res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+                res->sw2 = 0U;
+                res->data.len = 0U;
+                return SWICC_RET_SUCCESS;
+            }
+            /* Safe cast due to the bound check in 'if'. */
+            uint16_t const data_size_be =
+                htobe16((uint16_t)file_selected->data_size);
 #if SELECT_3GPP_MEM_TOT == 1
             uint32_t const data_size_tot_be =
                 htobe32(file_selected->hdr_item.size);
@@ -885,7 +893,8 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                         SWICC_RET_SUCCESS ||
 
                     /* Short file ID (SFI). */
-                    (SWICC_FS_FILE_EF_CHECK(file_selected)
+                    (SWICC_FS_FILE_EF_CHECK(file_selected) &&
+                             file_selected->hdr_file.sid != SWICC_FS_SID_MISSING
                          ? (swicc_dato_bertlv_enc_data(&enc_fcp, &data_sid,
                                                        sizeof(data_sid)) !=
                                 SWICC_RET_SUCCESS ||
