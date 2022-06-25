@@ -1,9 +1,11 @@
 #include "apduh.h"
 #include "apdu.h"
 #include "fs.h"
+#include "gsm.h"
 #include "swicc/apdu.h"
+#include "swsim.h"
 #include <arpa/inet.h>
-#include <netinet/in.h>
+#include <endian.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -27,6 +29,15 @@ static swicc_ret_et apduh_gsm_select(swicc_st *const swicc_state,
                                      swicc_apdu_res_st *const res,
                                      uint32_t const procedure_count)
 {
+    swsim_st *const swsim_state = (swsim_st *)swicc_state->userdata;
+    if (swsim_state == NULL)
+    {
+        res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+        res->sw2 = 0U;
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
     uint8_t const data_len_exp = 2U;
     if (cmd->hdr->p1 != 0 || cmd->hdr->p2 != 0 || *cmd->p3 != data_len_exp)
     {
@@ -66,11 +77,10 @@ static swicc_ret_et apduh_gsm_select(swicc_st *const swicc_state,
         return SWICC_RET_SUCCESS;
     }
 
-    /* GSM SELECT can only select by FID. */
-    swicc_fs_id_kt const fid = ntohs(*((uint16_t *)cmd->data->b));
-
     /* Perform requested operation. */
     {
+        /* GSM SELECT can only select by FID. */
+        swicc_fs_id_kt const fid = be16toh(*(uint16_t *)cmd->data->b);
         swicc_ret_et const ret_select =
             swicc_va_select_file_id(&swicc_state->fs, fid);
         if (ret_select == SWICC_RET_FS_NOT_FOUND)
@@ -89,265 +99,18 @@ static swicc_ret_et apduh_gsm_select(swicc_st *const swicc_state,
         }
 
         swicc_fs_file_st *const file_selected = &swicc_state->fs.va.cur_file;
-        switch (file_selected->hdr_item.type)
+        uint16_t select_res_len = sizeof(res->data);
+        if (gsm_select_res(&swicc_state->fs, swicc_state->fs.va.cur_tree,
+                           file_selected, res->data.b, &select_res_len) != 0 ||
+            select_res_len > UINT8_MAX)
         {
-        case SWICC_FS_ITEM_TYPE_FILE_MF:
-        case SWICC_FS_ITEM_TYPE_FILE_ADF:
-        /**
-         * @brief Not sure if this operation can select applications.
-         */
-        case SWICC_FS_ITEM_TYPE_FILE_DF: {
-            /* Response parameters data. */
-            uint32_t const mem_free =
-                UINT32_MAX - swicc_state->fs.va.cur_tree->len;
-            /**
-             * "Total amount of memory of the selected directory which is not
-             * allocated to any of the DFs or EFs under the selected directory."
-             * Safe cast due to check in same statement.
-             */
-            uint16_t const mem_free_short =
-                htons(mem_free > UINT16_MAX ? UINT16_MAX : (uint16_t)mem_free);
-            /* "File ID." */
-            uint16_t const file_id = htons(fid);
-            /* "Type of file." */
-            uint8_t file_type;
-            switch (file_selected->hdr_item.type)
-            {
-            case SWICC_FS_ITEM_TYPE_FILE_MF:
-                file_type = 0x01;
-                break;
-            case SWICC_FS_ITEM_TYPE_FILE_ADF:
-            case SWICC_FS_ITEM_TYPE_FILE_DF:
-                file_type = 0x02;
-                break;
-            default:
-                __builtin_unreachable();
-            }
-            /* Length of the GSM specific data. */
-            uint8_t const gsm_data_len =
-                10U; /* Everything except the last portion which is optional. */
-
-            /* GSM specific data. */
-            /* "File characteristics." */
-            /**
-             * LSB>MSB
-             *    1b Clock stop = 1 (clock stop allowed)
-             *  + 1b Authentication algorithm clock frequency = 1 (13/4 MHz)
-             *  + 1b Clock stop = 0 (high not preferred)
-             *  + 1b Clock stop = 0 (low not preferred)
-             *  + 1b 0 (from GSM 11.12 @todo Look into GSM 11.12)
-             *  + 2b RFU = 00
-             *  + 1b CHV1 = 1 = (disabled)
-             *
-             * @note Clock stop is allowed and has no preference on level.
-             */
-            uint8_t const file_characteristic = 0b10000011;
-            uint32_t df_child_count_tmp;
-            uint32_t ef_child_count_tmp;
-            int32_t const ret_count = sim_fs_file_child_count(
-                swicc_state->fs.va.cur_tree, file_selected, false,
-                &df_child_count_tmp, &ef_child_count_tmp);
-            if (ret_count != 0 || df_child_count_tmp > UINT8_MAX ||
-                ef_child_count_tmp > UINT8_MAX)
-            {
-                /**
-                 * @todo NV modified but can't indicate this, not sure what
-                 * to do here.
-                 */
-                res->sw1 = SWICC_APDU_SW1_CHER_UNK;
-                res->sw2 = 0U;
-                res->data.len = 0U;
-                return SWICC_RET_SUCCESS;
-            }
-            /**
-             * "Number of DFs which are a direct child of the current
-             * directory."
-             * Safe cast due to check in 'if' before.
-             */
-            uint8_t const df_child_count = (uint8_t)df_child_count_tmp;
-            /**
-             * "Number of EFs which are a direct child of the current
-             * directory."
-             * Safe cast due to check in 'if' before.
-             */
-            uint8_t const ef_child_count = (uint8_t)ef_child_count_tmp;
-            /**
-             * "Number of CHVs, UNBLOCK CHVs and administrative codes."
-             */
-            /**
-             * Status of a secret code:
-             * LSB>MSB
-             *   4b Number of false presentations remaining = 0
-             * + 3b RFU = 0
-             * + 1b Secret code initialized = 1 (initialized)
-             */
-            uint8_t const code_count = 4U; /* 4 CHVs (PIN1 PIN2 PUK ADM). */
-            /* "CHV1 status." */
-            uint8_t const chv1_status = 0b10000011;
-            /* "UNBLOCK CHV1 status." */
-            uint8_t const chv1_unblock_status = 0b10001010;
-            /* "CHV2." */
-            uint8_t const chv2_status = 0b10000011;
-            /* "UNBLOCK CHV2." */
-            uint8_t const chv2_unblock_status = 0b10001010;
-
-            /* Create the response in the response buffer. */
-            {
-                /**
-                 * Using response buffer as temporary storage for complete
-                 * response.
-                 */
-                memset(&res->data.b[0U], 0U, 2U);
-                memcpy(&res->data.b[2U], &mem_free_short, 2U);
-                memcpy(&res->data.b[4U], &file_id, 2U);
-                memcpy(&res->data.b[6U], &file_type, 1U);
-                memset(&res->data.b[7U], 0U, 5U);
-                memcpy(&res->data.b[12U], &gsm_data_len, 1U);
-                memcpy(&res->data.b[13U], &file_characteristic, 1U);
-                memcpy(&res->data.b[14U], &df_child_count, 1U);
-                memcpy(&res->data.b[15U], &ef_child_count, 1U);
-                memcpy(&res->data.b[16U], &code_count, 1U);
-                memset(&res->data.b[17U], 0, 1U);
-                memcpy(&res->data.b[18U], &chv1_status, 1U);
-                memcpy(&res->data.b[19U], &chv1_unblock_status, 1U);
-                memcpy(&res->data.b[20U], &chv2_status, 1U);
-                memcpy(&res->data.b[21U], &chv2_unblock_status, 1U);
-                memset(&res->data.b[22U], 0U, 1U);
-                res->data.len = 23U;
-            }
-            break;
+            res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+            res->sw2 = 0U;
+            res->data.len = 0U;
+            return SWICC_RET_SUCCESS;
         }
-        case SWICC_FS_ITEM_TYPE_FILE_EF_TRANSPARENT:
-        case SWICC_FS_ITEM_TYPE_FILE_EF_LINEARFIXED:
-        case SWICC_FS_ITEM_TYPE_FILE_EF_CYCLIC: {
-            /**
-             * "File size (for transparent EF: the length of the body part of
-             * the EF) (for linear fixed or cyclic EF: record length multiplied
-             * by the number of records of the EF)."
-             */
-            uint16_t file_size_be;
-            uint8_t rcrd_length;
-            if (file_selected->hdr_item.type ==
-                SWICC_FS_ITEM_TYPE_FILE_EF_TRANSPARENT)
-            {
-                /* Safe cast since same statement checks for overflow. */
-                file_size_be = htons(file_selected->data_size > UINT16_MAX
-                                         ? UINT16_MAX
-                                         : (uint16_t)file_selected->data_size);
-            }
-            else
-            {
-                uint32_t rcrd_cnt;
-                swicc_ret_et const ret_rcrd_cnt = swicc_disk_file_rcrd_cnt(
-                    swicc_state->fs.va.cur_tree, file_selected, &rcrd_cnt);
-                if (ret_rcrd_cnt != SWICC_RET_SUCCESS || rcrd_cnt > UINT16_MAX)
-                {
-                    /**
-                     * @todo NV modified but can't indicate this, not sure what
-                     * to do here.
-                     */
-                    res->sw1 = SWICC_APDU_SW1_CHER_UNK;
-                    res->sw2 = 0U;
-                    res->data.len = 0U;
-                    return SWICC_RET_SUCCESS;
-                }
-                uint8_t const rcrd_size =
-                    file_selected->hdr_item.type ==
-                            SWICC_FS_ITEM_TYPE_FILE_EF_LINEARFIXED
-                        ? file_selected->hdr_spec.ef_linearfixed.rcrd_size
-                        : file_selected->hdr_spec.ef_cyclic.rcrd_size;
-                /**
-                 * Safe cast since record count is <= UINT16_MAX and record size
-                 * is uint8 so can't overflow.
-                 */
-                file_size_be = htons((uint16_t)(rcrd_cnt * rcrd_size));
-                rcrd_length = rcrd_size;
-            }
-            /* "File ID." */
-            uint16_t const file_id_be = htons(file_selected->hdr_file.id);
-            /* "Type of file." */
-            uint8_t const file_type = 0x04;
-            /**
-             * Byte 7 (index 7, standard counts from 1 so there it's byte 8) is
-             * RFU for linear-fixed and transparent EFs but for cyclic all bits
-             * except b6 (index 6, in standard they index bits from 1 so it's b7
-             * there) are RFU. b6=1 means INCREASE is allowed on this file.
-             */
-            uint8_t const b7 = file_selected->hdr_item.type ==
-                                       SWICC_FS_ITEM_TYPE_FILE_EF_CYCLIC
-                                   ? 0x01
-                                   : 0x00;
-            /* "Access conditions." */
-            uint8_t const access_cond[3U] = {0x00, 0x00, 0x00};
-            /* "File status." */
-            /**
-             * All bits except b0 are RFU and shall be 0. b0=0 if invalidated,
-             * b0=0, if not invalidated b0=1.
-             */
-            uint8_t const file_status =
-                file_selected->hdr_item.lcs == SWICC_FS_LCS_OPER_ACTIV ? 0x01
-                                                                       : 0x00;
-            /* Length of the remainder of the response. */
-            uint8_t const data_extra_len = 2U; /* Everything. */
-            /* "Structure of EF." */
-            uint8_t ef_structure;
-            switch (file_selected->hdr_item.type)
-            {
-            case SWICC_FS_ITEM_TYPE_FILE_EF_TRANSPARENT:
-                ef_structure = 0x00;
-                break;
-            case SWICC_FS_ITEM_TYPE_FILE_EF_LINEARFIXED:
-                ef_structure = 0x01;
-                break;
-            case SWICC_FS_ITEM_TYPE_FILE_EF_CYCLIC:
-                ef_structure = 0x03;
-                break;
-            default:
-                __builtin_unreachable();
-            }
-            rcrd_length = 0;
-
-            /* Create the response in the response buffer. */
-            {
-                /**
-                 * Using response buffer as temporary storage for complete
-                 * response.
-                 */
-                memset(&res->data.b[0U], 0U, 2U);
-                memcpy(&res->data.b[2U], &file_size_be, 2U);
-                memcpy(&res->data.b[4U], &file_id_be, 2U);
-                memcpy(&res->data.b[6U], &file_type, 1U);
-                memcpy(&res->data.b[7U], &b7, 1U);
-                memcpy(&res->data.b[8U], access_cond, 3U);
-                memcpy(&res->data.b[11U], &file_status, 1U);
-                memcpy(&res->data.b[12U], &data_extra_len, 1U);
-                memcpy(&res->data.b[13U], &ef_structure, 1U);
-                memcpy(&res->data.b[14U], &rcrd_length, 1U);
-                res->data.len = 15U;
-
-                /**
-                 * Contents are returned directly as response to select only for
-                 * transparent EFs.
-                 */
-                if (file_selected->hdr_item.type ==
-                        SWICC_FS_ITEM_TYPE_FILE_EF_TRANSPARENT &&
-                    res->data.len + file_selected->data_size <= UINT8_MAX)
-                {
-                    memcpy(&res->data.b[res->data.len], file_selected->data,
-                           file_selected->data_size);
-                    /**
-                     * Safe cast since the addition was checked on overflow of
-                     * uint8.
-                     */
-                    res->data.len =
-                        (uint8_t)(res->data.len + file_selected->data_size);
-                }
-            }
-            break;
-        }
-        default:
-            break;
-        }
+        /* Safe cast due to check in if for GSM SELECT response creation. */
+        res->data.len = (uint8_t)select_res_len;
 
         /* Copy response to the GET RESPONSE buffer. */
         if (swicc_apdu_rc_enq(&swicc_state->apdu_rc, res->data.b,
@@ -365,7 +128,8 @@ static swicc_ret_et apduh_gsm_select(swicc_st *const swicc_state,
 
         /* "Length 'XX' of the response data." where 'XX' is SW2. */
         res->sw1 = 0x9F;
-        res->sw2 = (uint8_t)res->data.len; /* Length of response. */
+        /* Safe cast due to check while making GSM SELECT response. */
+        res->sw2 = (uint8_t)select_res_len; /* Length of response. */
         res->data.len = 0U;
         return SWICC_RET_SUCCESS;
     }
@@ -450,7 +214,7 @@ static swicc_ret_et apduh_gsm_bin_read(swicc_st *const swicc_state,
     uint8_t const offset_hi = cmd->hdr->p1;
     uint8_t const offset_lo = cmd->hdr->p2;
     /* Safe cast as just concatenating the two offset bytes. */
-    uint16_t const offset = ntohs((uint16_t)((offset_hi << 8U) | offset_lo));
+    uint16_t const offset = le16toh((offset_hi << 8U) | offset_lo);
 
     swicc_fs_file_st *const file = &swicc_state->fs.va.cur_file;
     switch (file->hdr_item.type)
@@ -502,6 +266,65 @@ static swicc_ret_et apduh_gsm_bin_read(swicc_st *const swicc_state,
         res->data.len = 0U;
         return SWICC_RET_SUCCESS;
     }
+}
+
+/**
+ * @brief Handle the STATUS command in the proprietary class A0 of
+ * GSM 11.11.
+ * @param swicc_state
+ * @param cmd
+ * @param res
+ * @param procedure_count
+ * @return Return code.
+ * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.2 (command),
+ * sec.9.3 (coding), and 9.4 (status conditions).
+ * @note Some SW1 and SW2 values are non-ISO since they originate from the
+ * GSM 11.11 standard and seem to exist there and only there.
+ */
+static swicc_apduh_ft apduh_gsm_status;
+static swicc_ret_et apduh_gsm_status(swicc_st *const swicc_state,
+                                     swicc_apdu_cmd_st const *const cmd,
+                                     swicc_apdu_res_st *const res,
+                                     uint32_t const procedure_count)
+{
+    swsim_st *const swsim_state = (swsim_st *)swicc_state->userdata;
+    if (swsim_state == NULL)
+    {
+        res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+        res->sw2 = 0U;
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
+    if (cmd->hdr->p1 != 0 || cmd->hdr->p2 != 0)
+    {
+        res->sw1 = SWICC_APDU_SW1_CHER_P1P2;
+        res->sw2 = 0U;
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
+    /* Prepare the response body. */
+    memset(res->data.b, 0x00, *cmd->p3);
+
+    /* Get the SELECT response for the currently selected folder. */
+    uint16_t select_res_len = sizeof(res->data);
+    if (gsm_select_res(&swicc_state->fs, swicc_state->fs.va.cur_tree,
+                       &swicc_state->fs.va.cur_df, res->data.b,
+                       &select_res_len) != 0 ||
+        select_res_len > UINT8_MAX)
+    {
+        res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+        res->sw2 = 0U;
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
+    res->sw1 = SWICC_APDU_SW1_NORM_NONE;
+    res->sw2 = 0U;
+    /* Safe cast due to check in if for GSM SELECT response creation. */
+    res->data.len = *cmd->p3;
+    return SWICC_RET_SUCCESS;
 }
 
 /**
@@ -709,8 +532,8 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
             }
             else
             {
-                ret_select = swicc_va_select_file_id(
-                    &swicc_state->fs, ntohs(*(swicc_fs_id_kt *)cmd->data->b));
+                swicc_fs_id_kt const fid = be16toh(*(uint16_t *)cmd->data->b);
+                ret_select = swicc_va_select_file_id(&swicc_state->fs, fid);
             }
             break;
         case METH_DF_NAME:
@@ -880,10 +703,10 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
 
             /* Create data for BER-TLV DOs. */
 
-            uint32_t const data_size_be = htonl(file_selected->data_size);
+            uint32_t const data_size_be = htobe32(file_selected->data_size);
             uint32_t const data_size_tot_be =
-                htonl(file_selected->hdr_item.size);
-            uint16_t const data_id_be = htons(file_selected->hdr_file.id);
+                htobe32(file_selected->hdr_item.size);
+            uint16_t const data_id_be = htobe16(file_selected->hdr_file.id);
             uint8_t const data_sid = file_selected->hdr_file.sid;
             /**
              * @warning The ATR and the UICC characteristics need to indicate
@@ -914,7 +737,7 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                          1MHz will be assumed. */
             };
             uint32_t const data_mem_available_be =
-                htonl(UINT32_MAX - swicc_state->fs.va.cur_tree->len);
+                htobe32(UINT32_MAX - swicc_state->fs.va.cur_tree->len);
             uint8_t const data_file_details[1U] = {
                 0b00000001, /**
                              * LSB>MSB
@@ -927,14 +750,14 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
              * Number of data bytes reserved for selected file that cannot be
              * allocated by any other entity.
              */
-            uint16_t const data_file_size_reserved_be = htons(0x0000);
+            uint16_t const data_file_size_reserved_be = htobe16(0x0000);
             /**
              * File size that shall not be exceeded excluding structural
              * information for the file.
              * @note Setting this to a value larger than any header with lots of
              * extra margin.
              */
-            uint32_t const data_file_size_max_be = htonl(UINT32_MAX - 1024U);
+            uint32_t const data_file_size_max_be = htobe32(UINT32_MAX - 1024U);
             uint8_t const data_sys_cmd_support[1U] = {
                 0b00000000, /* Supported commands. 0x00 = TERMINAL CAPABILITY
                                not supported (indicated by LSB and rest of bits
@@ -1767,6 +1590,11 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
                 (cmd->hdr->cla.raw & 0xF0) == 0xE0)
             {
                 ret = apduh_3gpp_status(swicc_state, cmd, res, procedure_count);
+            }
+            /* GSM */
+            else if (cmd->hdr->cla.raw == 0xA0)
+            {
+                ret = apduh_gsm_status(swicc_state, cmd, res, procedure_count);
             }
             break;
         case 0x2C: /* UNBLOCK PIN */

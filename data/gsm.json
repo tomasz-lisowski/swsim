@@ -1,0 +1,502 @@
+{
+    "disk": [
+        {
+            "type": "file_mf",
+            "id": "3F00",
+            "name": {
+                "type": "hex",
+                "contents": "00"
+            },
+            "contents": [
+                {
+                    "meta": {
+                        "name": "ICCID"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "2FE2",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "989999900000000000F1"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "TELECOM"
+                    },
+                    "type": "file_df",
+                    "id": "7F10",
+                    "name": {
+                        "type": "ascii",
+                        "contents": "TELECOM"
+                    },
+                    "contents": [
+                        {
+                            "meta": {
+                                "name": "Abbreviated dialling numbers"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F3A",
+                            "rcrd_size": 30,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                }
+                            ]
+                        },
+                        {
+                            "meta": {
+                                "name": "Fixed dialing numbers"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F3B",
+                            "rcrd_size": 30,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                }
+                            ]
+                        },
+                        {
+                            "meta": {
+                                "name": "Short messages"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F3C",
+                            "rcrd_size": 176,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                }
+                            ]
+                        },
+                        {
+                            "meta": {
+                                "name": "Capability configuration parameters"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F3D",
+                            "rcrd_size": 14,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                }
+                            ]
+                        },
+                        {
+                            "meta": {
+                                "name": "MSISDN"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F40",
+                            "rcrd_size": 30,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                }
+                            ]
+                        },
+                        {
+                            "meta": {
+                                "name": "SMS parameters"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F42",
+                            "rcrd_size": 44,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                }
+                            ]
+                        },
+                        {
+                            "meta": {
+                                "name": "SMS status"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F43",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "04FF"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "LND"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F44",
+                            "rcrd_size": 30,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                }
+                            ]
+                        },
+                        {
+                            "meta": {
+                                "name": "Short message status report"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F47",
+                            "rcrd_size": 30,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                }
+                            ]
+                        },
+                        {
+                            "meta": {
+                                "name": "Service dialing numbers"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F49",
+                            "rcrd_size": 30,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                }
+                            ]
+                        },
+                        {
+                            "meta": {
+                                "name": "Extension 1"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F4A",
+                            "rcrd_size": 13,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                }
+                            ]
+                        },
+                        {
+                            "meta": {
+                                "name": "Extension 2"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F4B",
+                            "rcrd_size": 13,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                }
+                            ]
+                        },
+                        {
+                            "meta": {
+                                "name": "Extension 3"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F4B",
+                            "rcrd_size": 13,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "GSM"
+                    },
+                    "type": "file_df",
+                    "id": "7F20",
+                    "name": {
+                        "type": "ascii",
+                        "contents": "GSM"
+                    },
+                    "contents": [
+                        {
+                            "meta": {
+                                "name": "Language indication"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F05",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "0E01FFFF"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "IMSI"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F07",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "089999990000000001"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "Ciphering key Kc"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F20",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "FFFFFFFFFFFFFFFF07"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "PLMN selector"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F30",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "999999"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "Higher priority PLMN search"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F31",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "05"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "ACM maximum value"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F37",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "000000"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "SIM service table"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F38",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "FF3FFFFF3F003F0F300C000000C0"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "Accumulated call meter"
+                            },
+                            "type": "file_ef_linear-fixed",
+                            "id": "6F39",
+                            "rcrd_size": 3,
+                            "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "000000"
+                                },
+                                {
+                                    "type": "hex",
+                                    "contents": "000000"
+                                }
+                            ]
+                        },
+                        {
+                            "meta": {
+                                "name": "Group identifier 1"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F3E",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "FFFFFFFF"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "Group identifier 2"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F3F",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "FFFFFFFF"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "PUCT"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F41",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "FFFFFF0000"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "CBMI"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F45",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "FFFFFFFFFFFFFFFFFFFF"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "Service provider name"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F46",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "00737753494D20627920546F6D61737AFF"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "BCCH"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F74",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "00000000000000000000000000000000"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "Access control class"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F78",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "0080"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "Forbidden PLMNs"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F7B",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "FFFFFFFFFFFFFFFFFFFFFFFF"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "Location information"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6F7E",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "FFFFFFFF99999999F9FF03"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "Administrative data"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6FAD",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "00FFFF"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "Phase identification"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "6FAE",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "03"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
