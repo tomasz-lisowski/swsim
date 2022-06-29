@@ -30,8 +30,8 @@ all: main
 .PHONY: all
 
 main: $(DIR_BUILD) $(DIR_BUILD)/$(MAIN_NAME) $(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN)
-main-dbg: MAIN_LIBSWICC_TARGET:=main-dbg
-main-dbg: MAIN_CC_FLAGS+=-g -DDEBUG -fsanitize=address
+main-dbg: MAIN_LIBSWICC_TARGET:=main-dbg-clr
+main-dbg: MAIN_CC_FLAGS+=-g -DDEBUG -DDEBUG_CLR -fsanitize=address
 main-dbg: main
 .PHONY: main main-dbg
 

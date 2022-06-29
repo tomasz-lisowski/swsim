@@ -11,7 +11,16 @@ int32_t swsim_init(swsim_st *const swsim_state, swicc_st *const swicc_state,
     swicc_state->userdata = swsim_state;
 
     swicc_disk_st disk = {0};
-    swicc_ret_et const ret_disk = swicc_diskjs_disk_create(&disk, path_json);
+    swicc_ret_et ret_disk = SWICC_RET_ERROR;
+    if (path_json != NULL)
+    {
+        ret_disk = swicc_diskjs_disk_create(&disk, path_json);
+    }
+    else
+    {
+        ret_disk = swicc_disk_load(&disk, path_swicc);
+    }
+
     if (ret_disk == SWICC_RET_SUCCESS)
     {
         if (path_swicc == NULL ||
@@ -42,7 +51,8 @@ int32_t swsim_init(swsim_st *const swsim_state, swicc_st *const swicc_state,
     }
     else
     {
-        printf("Failed to create disk: %s.\n", swicc_dbg_ret_str(ret_disk));
+        printf("Failed to load/generate disk: %s.\n",
+               swicc_dbg_ret_str(ret_disk));
     }
     return -1;
 }

@@ -124,8 +124,7 @@ int32_t o3gpp_select_res(swicc_fs_st const *const fs,
                  3GPP 31.101 V17.0.0 pg.20 sec.11.1.1.4.6, a value of
                  1MHz will be assumed. */
     };
-    uint32_t const data_mem_available_be =
-        htobe32(UINT32_MAX - fs->va.cur_tree->len);
+    uint32_t const data_mem_available_be = htobe32(UINT32_MAX - tree->len);
     uint8_t const data_file_details[1U] = {
         0b00000001, /**
                      * LSB>MSB
@@ -217,8 +216,8 @@ int32_t o3gpp_select_res(swicc_fs_st const *const fs,
     uint8_t descr_be[SWICC_FS_FILE_DESCR_LEN_MAX];
     uint8_t descr_len = 0U;
     if (swicc_fs_file_lcs(file_selected, &lcs_be) != SWICC_RET_SUCCESS ||
-        swicc_fs_file_descr(fs->va.cur_tree, file_selected, descr_be,
-                            &descr_len) != SWICC_RET_SUCCESS)
+        swicc_fs_file_descr(tree, file_selected, descr_be, &descr_len) !=
+            SWICC_RET_SUCCESS)
     {
         return -1;
     }

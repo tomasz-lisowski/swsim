@@ -5,7 +5,6 @@
 #include "gsm.h"
 #include "swicc/apdu.h"
 #include "swsim.h"
-#include <arpa/inet.h>
 #include <endian.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -215,7 +214,8 @@ static swicc_ret_et apduh_gsm_bin_read(swicc_st *const swicc_state,
     uint8_t const offset_hi = cmd->hdr->p1;
     uint8_t const offset_lo = cmd->hdr->p2;
     /* Safe cast as just concatenating the two offset bytes. */
-    uint16_t const offset = le16toh((offset_hi << 8U) | offset_lo);
+    uint16_t const offset =
+        le16toh((uint16_t)((uint16_t)(offset_hi << 8U) | offset_lo));
 
     swicc_fs_file_st *const file = &swicc_state->fs.va.cur_file;
     switch (file->hdr_item.type)
@@ -326,6 +326,91 @@ static swicc_ret_et apduh_gsm_status(swicc_st *const swicc_state,
     /* Safe cast due to check in if for GSM SELECT response creation. */
     res->data.len = *cmd->p3;
     return SWICC_RET_SUCCESS;
+}
+
+/**
+ * @brief Handle the RUN GSM ALGORITHM command in the proprietary class A0 of
+ * GSM 11.11.
+ * @param swicc_state
+ * @param cmd
+ * @param res
+ * @param procedure_count
+ * @return Return code.
+ * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.16 (command),
+ * sec.9.3 (coding), and 9.4 (status conditions).
+ * @note Some SW1 and SW2 values are non-ISO since they originate from the
+ * GSM 11.11 standard and seem to exist there and only there.
+ */
+static swicc_apduh_ft apduh_gsm_gsm_algo_run;
+static swicc_ret_et apduh_gsm_gsm_algo_run(swicc_st *const swicc_state,
+                                           swicc_apdu_cmd_st const *const cmd,
+                                           swicc_apdu_res_st *const res,
+                                           uint32_t const procedure_count)
+{
+    swsim_st *const swsim_state = (swsim_st *)swicc_state->userdata;
+    if (swsim_state == NULL)
+    {
+        SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_UNK, 0U, 0U);
+        return SWICC_RET_SUCCESS;
+    }
+
+    /* Validate command parameters. */
+    if (cmd->hdr->p1 != 0 || cmd->hdr->p2 != 0)
+    {
+        SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_P1P2, 0U, 0U);
+        return SWICC_RET_SUCCESS;
+    }
+    uint8_t const data_len_exp = 0x10;
+    if (*cmd->p3 != data_len_exp)
+    {
+        SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_LEN, 0U, 0U);
+        return SWICC_RET_SUCCESS;
+    }
+
+    /* Expecting to receive a random data. */
+    if (procedure_count == 0U)
+    {
+        /* Make sure no data is received before first procedure is sent. */
+        if (cmd->data->len != 0)
+        {
+            SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_UNK, 0U, 0U);
+            return SWICC_RET_SUCCESS;
+        }
+
+        SWICC_APDUH_RES(res, SWICC_APDU_SW1_PROC_ACK_ALL, 0U, data_len_exp);
+        return SWICC_RET_SUCCESS;
+    }
+
+    /**
+     * The ACK ALL procedure was sent and we expected to receive all the data
+     * but did not receive the expected amount of data.
+     */
+    if (procedure_count >= 1U && cmd->data->len != data_len_exp)
+    {
+        SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_LEN, 0U, 0U);
+        return SWICC_RET_SUCCESS;
+    }
+
+    /* A3/A8 individual subscriber authentication key. */
+    uint8_t const ki[16] = {
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x07,
+    };
+
+    gsm_algo(ki, cmd->data->b, res->data.b);
+    res->data.len = 12U;
+    /* Copy response to the GET RESPONSE buffer. */
+    if (swicc_apdu_rc_enq(&swicc_state->apdu_rc, res->data.b, res->data.len) !=
+        SWICC_RET_SUCCESS)
+    {
+        SWICC_APDUH_RES(res, 0x9F, 12U, 0U);
+        return SWICC_RET_SUCCESS;
+    }
+    else
+    {
+        SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_UNK, 0U, 0U);
+        return SWICC_RET_SUCCESS;
+    }
 }
 
 /**
@@ -1148,8 +1233,11 @@ static swicc_ret_et apduh_3gpp_bin_update(swicc_st *const swicc_state,
         break;
     }
 
+    /* Safe cast as just concatenating two offset bytes into a short. */
     uint16_t const offset =
-        meth == METH_SFI ? offset_lo : be16toh((offset_hi << 8) | offset_lo);
+        meth == METH_SFI
+            ? offset_lo
+            : be16toh((uint16_t)((uint16_t)(offset_hi << 8) | offset_lo));
     /* Perform requested operation. */
     {
         swicc_fs_file_st *file_edit = NULL;
@@ -1343,6 +1431,14 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
             {
                 ret = apduh_3gpp_bin_update(swicc_state, cmd, res,
                                             procedure_count);
+            }
+            break;
+        case 0x88: /* RUN GSM ALGORITHM */
+            /* GSM */
+            if (cmd->hdr->cla.raw == 0xA0)
+            {
+                ret = apduh_gsm_gsm_algo_run(swicc_state, cmd, res,
+                                             procedure_count);
             }
             break;
         default:

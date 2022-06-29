@@ -1,0 +1,1622 @@
+{
+    "disk": [
+        {
+            "meta": {
+                "name": "MF"
+            },
+            "type": "file_mf",
+            "id": "3F00",
+            "name": {
+                "type": "ascii",
+                "contents": "MF"
+            },
+            "contents": [
+                {
+                    "meta": {
+                        "name": "EF.DIR"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "2F00",
+                    "rcrd_size": 43,
+                    "contents": [
+                        {
+                            "type": "dato_ber-tlv",
+                            "contents": {
+                                "tag": {
+                                    "class": 1,
+                                    "number": 1
+                                },
+                                "val": [
+                                    {
+                                        "tag": {
+                                            "class": 1,
+                                            "number": 15
+                                        },
+                                        "val": "A0000000871002FFFFFFFF8917050000"
+                                    },
+                                    {
+                                        "tag": {
+                                            "class": 1,
+                                            "number": 16
+                                        },
+                                        "val": "737753494D2F5553494D30"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.PL"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "2F05",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.ICCID"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "2FE2",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "988812010000500180F4"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "DF.GSM"
+                    },
+                    "type": "file_df",
+                    "id": "7F20",
+                    "name": {
+                        "type": "ascii",
+                        "contents": "GSM"
+                    },
+                    "contents": []
+                }
+            ]
+        },
+        {
+            "meta": {
+                "name": "ADF.USIM"
+            },
+            "type": "file_adf",
+            "id": "FF01",
+            "name": {
+                "type": "hex",
+                "contents": "A0000000871002FFFFFFFF8917050000"
+            },
+            "contents": [
+                {
+                    "meta": {
+                        "name": "DF.GSM-ACCESS"
+                    },
+                    "name": {
+                        "type": "ascii",
+                        "contents": "GSM-ACCESS"
+                    },
+                    "type": "file_df",
+                    "id": "5F3B",
+                    "contents": [
+                        {
+                            "meta": {
+                                "name": "EF.Kc"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "4F20",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "FFFFFFFFFFFFFFFF07"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "name": "EF.KcGPRS"
+                            },
+                            "type": "file_ef_transparent",
+                            "id": "4F52",
+                            "contents": {
+                                "type": "hex",
+                                "contents": "FFFFFFFFFFFFFFFF07"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.LI"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F05",
+                    "sid": "02",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.ARR"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F06",
+                    "sid": "17",
+                    "rcrd_size": 110,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "8001079000800160A4068301019501088401D4A40683010A950108FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "8001019000800102A406830101950108800118A40683010A9501088401D4A40683010A950108FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "800101A40683010195010880011AA40683010A9501088401D4A40683010A950108FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "800103A406830101950108800118A40683010A9501088401D4A40683010A950108FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "840132A406830101950108800101A406830101950108800102A406830181950108800118A40683010A95010880012097008401D4A40683010A950108FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "800101900080011AA40683010A9501088401D4A40683010A950108FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "800101A406830101950108800102A406830181950108800118A40683010A9501088401D4A40683010A950108FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "840132A406830101950108800103A406830101950108800118A40683010A9501088401D4A40683010A950108FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "800101A40683010A950108800102A40683010A950108800110A40683010A950108800108A40683010A950108FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.IMSI"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F07",
+                    "sid": "07",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "089910070000500190"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.Keys"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F08",
+                    "sid": "08",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "07FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.KeysPS"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F09",
+                    "sid": "09",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "07FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.DCK"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F2C",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.HPPLMN"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F31",
+                    "sid": "12",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "05"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.CNL"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F32",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.ACMmax"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F37",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "000000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.UST"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F38",
+                    "sid": "04",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "BEFF9F9DE73E0408400170730000002E00000000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.ACM"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F39",
+                    "sid": "1C",
+                    "rcrd_size": 3,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "000000"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "000000"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.SMS"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F3C",
+                    "rcrd_size": 176,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.GID1"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F3E",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.GID2"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F3F",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.FDN"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F3B",
+                    "rcrd_size": 30,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.MSISDN"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F40",
+                    "rcrd_size": 30,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.PUCT"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F41",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFF0000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.SMSP"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F42",
+                    "rcrd_size": 52,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE1FFFFFFFFFFFFFFFFFFFFFFFF06815384090067FFFFFFFFFF000000"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.SMSS"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F43",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "0BFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.CBMI"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F45",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.SPN"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F46",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.SMSR"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F47",
+                    "rcrd_size": 30,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.CBMID"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F48",
+                    "sid": "0E",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.SDN"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F49",
+                    "rcrd_size": 30,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.EXT2"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F4B",
+                    "rcrd_size": 13,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "00FFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "00FFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.EXT3"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F4C",
+                    "rcrd_size": 13,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.BDN"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F4D",
+                    "rcrd_size": 29,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.EXT5"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F4E",
+                    "rcrd_size": 13,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.CCP2"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F4F",
+                    "sid": "16",
+                    "rcrd_size": 15,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.CBMIR"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F50",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.EST"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F56",
+                    "sid": "05",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "000000000000000000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.ACL"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F57",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.CMI"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6F58",
+                    "rcrd_size": 11,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.START-HFN"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F5B",
+                    "sid": "0F",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "F00000F00000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.THRESHOLD"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F5C",
+                    "sid": "10",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.PLMNwAcT"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F60",
+                    "sid": "0A",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFF0000FFFFFF0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.OPLMNwACT"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F61",
+                    "sid": "11",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFF0000FFFFFF0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.HPLMNwAcT"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F62",
+                    "sid": "13",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFF0000FFFFFF0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.PSLOCI"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F73",
+                    "sid": "0C",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "00090001FFFFFF00F11003E80000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.ACC"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F78",
+                    "sid": "06",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "0100"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.FPLMN"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F7B",
+                    "sid": "0D",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "02F46102F48002F440130062"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.LOCI"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6F7E",
+                    "sid": "0B",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "007B000200F11003E8FF00"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.ICI"
+                    },
+                    "type": "file_ef_cyclic",
+                    "id": "6F80",
+                    "sid": "14",
+                    "rcrd_size": 30,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000001FFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.OCI"
+                    },
+                    "type": "file_ef_cyclic",
+                    "id": "6F81",
+                    "sid": "15",
+                    "rcrd_size": 30,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000001FFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.ICT"
+                    },
+                    "type": "file_ef_cyclic",
+                    "id": "6F82",
+                    "rcrd_size": 3,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "000000"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.OCT"
+                    },
+                    "type": "file_ef_cyclic",
+                    "id": "6F83",
+                    "rcrd_size": 3,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "000000"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.AD"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FAD",
+                    "sid": "03",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "00000002"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.VGCS"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FB1",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.VGCSS"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FB2",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.VBS"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FB3",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.VBSS"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FB4",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.eMLPP"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FB5",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "0000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.AaeM"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FB6",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "00"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.ECC"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FB7",
+                    "sid": "01",
+                    "rcrd_size": 16,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.NETPAR"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FC4",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "A0088002249F8102249FA10480020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.PNN"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FC5",
+                    "sid": "19",
+                    "rcrd_size": 24,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.OPL"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FC6",
+                    "rcrd_size": 8,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.MBDN"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FC7",
+                    "rcrd_size": 24,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.EXT6"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FC8",
+                    "rcrd_size": 13,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.MBI"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FC9",
+                    "rcrd_size": 4,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.MWIS"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FCA",
+                    "rcrd_size": 5,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.CFIS"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FCB",
+                    "rcrd_size": 16,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.EXT7"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FCC",
+                    "rcrd_size": 13,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.MMSN"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FCE",
+                    "rcrd_size": 24,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.EXT8"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FCF",
+                    "rcrd_size": 64,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.SPDI"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FCD",
+                    "sid": "1B",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.MMSICP"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FD0",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.MMSUP"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FD1",
+                    "rcrd_size": 64,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.MMSUCP"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FD2",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.NIA"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FD3",
+                    "rcrd_size": 21,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.VGCSCA"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FD4",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "0000000000000000000000000000000000000000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.GBABP"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FD6",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.MSK"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FD7",
+                    "rcrd_size": 20,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.MUK"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FD8",
+                    "rcrd_size": 40,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.EHPLMN"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FD9",
+                    "sid": "1D",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "09F107FFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.GBANL"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FDA",
+                    "rcrd_size": 4,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.EHPLMNPI"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FDB",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "02"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.NAFKCA"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FDD",
+                    "rcrd_size": 32,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.SPNI"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FDE",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.PNNI"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FDF",
+                    "rcrd_size": 30,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.NCP-IP"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FE2",
+                    "rcrd_size": 54,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "A0348001078120FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8204000000008304000000008401FF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.EPSLOCI"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FE3",
+                    "sid": "1E",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "0BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE02"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.EPSNSC"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FE4",
+                    "sid": "18",
+                    "rcrd_size": 54,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "A0348001078120FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8204000000008304000000008401FF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.UFC"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FE6",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.NASCONFIG"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FE8",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FFFFFFFF"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.BDNURI"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FEE",
+                    "rcrd_size": 128,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.PWS"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FEC",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "000000"
+                    }
+                },
+                {
+                    "meta": {
+                        "name": "EF.FDNURI"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FED",
+                    "rcrd_size": 4,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.SDNURI"
+                    },
+                    "type": "file_ef_linear-fixed",
+                    "id": "6FEF",
+                    "rcrd_size": 4,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.IPS"
+                    },
+                    "type": "file_ef_cyclic",
+                    "id": "6FF1",
+                    "rcrd_size": 4,
+                    "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFF"
+                        },
+                        {
+                            "type": "hex",
+                            "contents": "FFFFFFFF"
+                        }
+                    ]
+                },
+                {
+                    "meta": {
+                        "name": "EF.FromPreferred"
+                    },
+                    "type": "file_ef_transparent",
+                    "id": "6FF7",
+                    "contents": {
+                        "type": "hex",
+                        "contents": "FF"
+                    }
+                }
+            ]
+        }
+    ]
+}
