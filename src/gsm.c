@@ -105,8 +105,9 @@ static uint8_t const comp128_table_4[32] = {
 
 /* These are the COMP128 compression tables. */
 static uint8_t const *const comp128_table[5U] = {
-    comp128_table_0, comp128_table_1, comp128_table_2, comp128_table_3,
-    comp128_table_4};
+    comp128_table_0, comp128_table_1, comp128_table_2,
+    comp128_table_3, comp128_table_4,
+};
 
 int32_t gsm_select_res(swicc_fs_st const *const fs,
                        swicc_disk_tree_st *const tree,
@@ -154,17 +155,15 @@ int32_t gsm_select_res(swicc_fs_st const *const fs,
         /* "File characteristics." */
         /**
          * LSB>MSB
-         *    1b Clock stop = 1 (clock stop allowed)
-         *  + 1b Authentication algorithm clock frequency = 1 (13/4 MHz)
-         *  + 1b Clock stop = 0 (high not preferred)
-         *  + 1b Clock stop = 0 (low not preferred)
+         *    1b Clock stop             = 0 (not allowed)
+         *  + 1b Auth. alg. clock freq. = 1 (13/4 MHz)
+         *  + 1b Clock stop             = 0 (high not preferred)
+         *  + 1b Clock stop             = 0 (low not preferred)
          *  + 1b 0 (from GSM 11.12 @todo Look into GSM 11.12)
-         *  + 2b RFU = 00
-         *  + 1b CHV1 = 1 = (disabled)
-         *
-         * @note Clock stop is allowed and has no preference on level.
+         *  + 2b RFU                    = 00
+         *  + 1b CHV1                   = 1 (disabled)
          */
-        uint8_t const file_characteristic = 0b10000011;
+        uint8_t const file_characteristic = 0b10000010;
         uint32_t df_child_count_tmp;
         uint32_t ef_child_count_tmp;
         int32_t const ret_count = sim_fs_file_child_count(

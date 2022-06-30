@@ -101,13 +101,16 @@ int32_t o3gpp_select_res(swicc_fs_st const *const fs,
      * the same capability!
      */
     uint8_t const data_uicc_char[1U] = {
-        0b01110001, /**
+        0b01110000, /**
                      * LSB>MSB
                      * UICC characteristics
-                     *    1b Clock stop allowed = 1 (allowed)
-                     *  + 1b RFU                = 0
-                     *  + 2b Clock stop level   = 00 (no preferrence)
-                     *  + 4b RFU                = 0000
+                     *    1b Clock stop allowed     = 0 (not allowed)
+                     *  + 1b RFU                    = 0
+                     *  + 2b Clock stop level       = 00 (no preferrence)
+                     *  + 1b Supply voltage class A = 1 (supported)
+                     *  + 1b Supply voltage class B = 1 (supported)
+                     *  + 1b Supply voltage class C = 1 (supported)
+                     *  + 1b RFU                    = 0000
                      */
     };
     uint8_t const data_app_power_cons[3U] = {
