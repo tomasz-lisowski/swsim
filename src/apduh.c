@@ -400,7 +400,7 @@ static swicc_ret_et apduh_gsm_gsm_algo_run(swicc_st *const swicc_state,
     gsm_algo(ki, cmd->data->b, res->data.b);
     res->data.len = 12U;
     /* Copy response to the GET RESPONSE buffer. */
-    if (swicc_apdu_rc_enq(&swicc_state->apdu_rc, res->data.b, res->data.len) !=
+    if (swicc_apdu_rc_enq(&swicc_state->apdu_rc, res->data.b, res->data.len) ==
         SWICC_RET_SUCCESS)
     {
         SWICC_APDUH_RES(res, 0x9F, 12U, 0U);
