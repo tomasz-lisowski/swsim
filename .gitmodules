@@ -3,4 +3,4 @@
 	url = git@github.com:tomasz-lisowski/make-pal.git
 [submodule "lib/swicc"]
 	path = lib/swicc
-	url = git@github.com:tomasz-lisowski/libswicc.git
+	url = git@github.com:tomasz-lisowski/swicc.git
