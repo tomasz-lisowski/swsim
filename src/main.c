@@ -1,3 +1,11 @@
+/* Use color in the help commands no matter what. */
+#ifndef DEBUG_CLR
+#define DEBUG_CLR
+#endif
+
+#define SERVER_IP_DEF "127.0.0.1"
+#define SERVER_PORT_DEF "37324"
+
 #include "pin.h"
 #include "swsim.h"
 #include <getopt.h>
@@ -24,7 +32,7 @@ static void print_usage(char const *const arg0)
         "\n<"CLR_KND("--fs")" "CLR_VAL("path")" | "CLR_KND("-f")" "CLR_VAL("path")">"
         "\n["CLR_KND("--fs-gen")" "CLR_VAL("path")" | "CLR_KND("-g")" "CLR_VAL("path")"]"
         "\n"
-        "\n- IP and port form the address of the server that swSIM will connect to."
+        "\n- IP and port form the address of the server that swSIM will connect to (by default "CLR_TXT(CLR_YEL, SERVER_IP_DEF":"SERVER_PORT_DEF)")."
         "\n- FS path is a location for loading and saving the swICC FS file."
         "\n- FS gen path is the JSON FS definition location for generating a swICC FS file."
         "\n- Note that if the FS gen path is given, the swICC FS file at the given path will be overwritten with the generated one."
@@ -94,19 +102,17 @@ int32_t main(int32_t const argc, char *const argv[argc])
     }
     if (server_ip == NULL)
     {
-        printf("Server IP is mandatory.\n");
-        print_usage(argv[0U]);
-        exit(EXIT_FAILURE);
+        server_ip = SERVER_IP_DEF;
+        printf("Using default server IP: '%s'.\n", server_ip);
     }
     if (server_port == NULL)
     {
-        printf("Server port is mandatory.\n");
-        print_usage(argv[0U]);
-        exit(EXIT_FAILURE);
+        server_port = SERVER_PORT_DEF;
+        printf("Using default server port: '%s'.\n", server_port);
     }
     if (path_swiccfs == NULL)
     {
-        printf("File system path is mandatory.\n");
+        printf(CLR_TXT(CLR_RED, "File system path is mandatory.\n"));
         print_usage(argv[0U]);
         exit(EXIT_FAILURE);
     }
