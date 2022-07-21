@@ -1,9 +1,10 @@
 #pragma once
 /**
- * For managing the application local PIN.
+ * For managing the application-local PIN.
  * @note The PIN lengths used here are byte counts not digit counts. PINs are
  * stored using a binary coded decimal (BCD) encoding so one byte can hold two
  * digits.
+ * @todo PINs are not implemented.
  */
 
 #include <stdbool.h>

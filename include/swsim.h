@@ -13,10 +13,10 @@ typedef struct swsim_st
 /**
  * @brief Initialize the state of the swSIM (excluding the non-internal buffers
  * that have to be set before calling this function).
- * @param sim_state This will be initialized.
- * @param swicc_state This will be initialized.
- * @param path_json Path to the JSON definition of the FS.
- * @param path_swicc Where the generated swICC FS file will be written. When
+ * @param[in, out] sim_state This will be initialized.
+ * @param[in, out] swicc_state This will be initialized.
+ * @param[in] path_json Path to the JSON definition of the FS.
+ * @param[in] path_swicc Where the generated swICC FS file will be written. When
  * this is NULL, the generated swICC file will not be written to disk.
  * @return 0 on success, -1 on failure.
  */

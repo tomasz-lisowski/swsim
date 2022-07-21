@@ -6,7 +6,10 @@ typedef struct fs_file_count_userdata_s
     uint32_t df_count;
 } fs_file_count_userdata_st;
 
-static fs_file_foreach_cb fs_file_child_count_cb;
+/**
+ * @brief For counting items in the file system.
+ */
+static swicc_disk_file_foreach_cb fs_file_child_count_cb;
 static swicc_ret_et fs_file_child_count_cb(__attribute__((unused))
                                            swicc_disk_tree_st *const tree,
                                            swicc_fs_file_st *const file,

@@ -13,10 +13,10 @@
 
 /**
  * @brief Handle the SELECT command in the proprietary class A0 of GSM 11.11.
- * @param swicc_state
- * @param cmd
- * @param res
- * @param procedure_count
+ * @param[in, out] swicc_state
+ * @param[in, out] cmd
+ * @param[out] res
+ * @param[in] procedure_count
  * @return Return code.
  * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.1 (command),
  * sec.9.3 (coding), and 9.4 (status conditions).
@@ -138,10 +138,10 @@ static swicc_ret_et apduh_gsm_select(swicc_st *const swicc_state,
 /**
  * @brief Handle the GET RESPONSE command in the proprietary class A0 of
  * GSM 11.11.
- * @param swicc_state
- * @param cmd
- * @param res
- * @param procedure_count
+ * @param[in, out] swicc_state
+ * @param[in] cmd
+ * @param[out] res
+ * @param[in] procedure_count
  * @return Return code.
  * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.18 (command),
  * sec.9.3 (coding), and 9.4 (status conditions).
@@ -183,10 +183,10 @@ static swicc_ret_et apduh_gsm_res_get(swicc_st *const swicc_state,
 /**
  * @brief Handle the READ BINARY command in the proprietary class A0 of
  * GSM 11.11.
- * @param swicc_state
- * @param cmd
- * @param res
- * @param procedure_count
+ * @param[in, out] swicc_state
+ * @param[in] cmd
+ * @param[out] res
+ * @param[out] procedure_count
  * @return Return code.
  * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.3 (command),
  * sec.9.3 (coding), and 9.4 (status conditions).

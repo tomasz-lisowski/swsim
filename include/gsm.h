@@ -3,12 +3,13 @@
 
 /**
  * @brief Create a response to SELECT for a given file.
- * @param fs The swICC file system containing the file.
- * @param tree Tree containing the file.
- * @param file The file to create response for.
- * @param buf_res Where the response will be written.
- * @param buf_res_len This shall contain the size of the response buffer. It
- * will receive the size of the response that was writen to the buffer.
+ * @param[in] fs The swICC file system containing the file.
+ * @param[in] tree Tree containing the file.
+ * @param[in] file The file to create response for.
+ * @param[out] buf_res Where the response will be written.
+ * @param[in, out] buf_res_len This shall contain the size of the response
+ * buffer. It will receive the size of the response that was writen to the
+ * buffer.
  * @return 0 on success, -1 on failure.
  */
 int32_t gsm_select_res(swicc_fs_st const *const fs,
@@ -18,9 +19,9 @@ int32_t gsm_select_res(swicc_fs_st const *const fs,
 
 /**
  * @brief Run the GSM algorithm.
- * @param ki Individual subscriber authentication key.
- * @param rand Challegne from base station.
- * @param res Response of the GSM algorithm.
+ * @param[in] ki Individual subscriber authentication key.
+ * @param[in] rand Challegne from base station.
+ * @param[out] res Response of the GSM algorithm.
  * An implementation of the GSM A3A8 algorithm (COMP128).
  * @note This algorithm has been reversed and implemented by: Marc Briceno,
  * Ian Goldberg, and David Wagner.

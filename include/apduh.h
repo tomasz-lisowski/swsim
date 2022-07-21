@@ -4,10 +4,6 @@
 
 /**
  * @brief APDU handler demux for the SIM.
- * @param swicc_state
- * @param cmd
- * @param res
- * @param procedure_count
  */
 swicc_apduh_ft sim_apduh_demux;
 swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,

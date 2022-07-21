@@ -2,17 +2,17 @@
 #include <endian.h>
 #include <string.h>
 
-/* Toggle to 1 to send additional data in SELECT response. */
+/* Toggle to 1 to send additional data in 3GPP SELECT response. */
 #define SELECT_3GPP_MEM_TOT 0
 #define SELECT_3GPP_SYS_CMD 0
 #define SELECT_3GPP_UICC_ENV_COND 0
 
 int32_t o3gpp_select_res(swicc_fs_st const *const fs,
-                         swicc_disk_tree_st *const tree,
-                         swicc_fs_file_st *const file, uint8_t *const buf_res,
-                         uint16_t *const buf_res_len)
+                         swicc_disk_tree_st const *const tree,
+                         swicc_fs_file_st const *const file,
+                         uint8_t *const buf_res, uint16_t *const buf_res_len)
 {
-    swicc_fs_file_st *const file_selected = file;
+    swicc_fs_file_st const *const file_selected = file;
 
     /**
      * ETSI TS 102 221 V16.4.0 pg.86 sec.11.1.1.3 describes what BER-TLV
@@ -227,10 +227,10 @@ int32_t o3gpp_select_res(swicc_fs_st const *const fs,
     uint8_t data_aid[SWICC_FS_ADF_AID_LEN];
     if (file_selected->hdr_item.type == SWICC_FS_ITEM_TYPE_FILE_ADF)
     {
-        memcpy(file_selected->hdr_spec.adf.aid.rid, data_aid,
+        memcpy(data_aid, file_selected->hdr_spec.adf.aid.rid,
                SWICC_FS_ADF_AID_RID_LEN);
-        memcpy(file_selected->hdr_spec.adf.aid.pix,
-               &data_aid[SWICC_FS_ADF_AID_RID_LEN], SWICC_FS_ADF_AID_PIX_LEN);
+        memcpy(&data_aid[SWICC_FS_ADF_AID_RID_LEN],
+               file_selected->hdr_spec.adf.aid.pix, SWICC_FS_ADF_AID_PIX_LEN);
     }
 
     uint8_t *bertlv_buf;

@@ -8,6 +8,7 @@ int32_t swsim_init(swsim_st *const swsim_state, swicc_st *const swicc_state,
                    char const *const path_json, char const *const path_swicc)
 {
     memset(swsim_state, 0U, sizeof(*swsim_state));
+    memset(swicc_state, 0U, sizeof(*swicc_state));
     swicc_state->userdata = swsim_state;
 
     swicc_disk_st disk = {0};
