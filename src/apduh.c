@@ -13,11 +13,6 @@
 
 /**
  * @brief Handle the SELECT command in the proprietary class A0 of GSM 11.11.
- * @param[in, out] swicc_state
- * @param[in, out] cmd
- * @param[out] res
- * @param[in] procedure_count
- * @return Return code.
  * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.1 (command),
  * sec.9.3 (coding), and 9.4 (status conditions).
  * @note Some SW1 and SW2 values are non-ISO since they originate from the
@@ -138,11 +133,6 @@ static swicc_ret_et apduh_gsm_select(swicc_st *const swicc_state,
 /**
  * @brief Handle the GET RESPONSE command in the proprietary class A0 of
  * GSM 11.11.
- * @param[in, out] swicc_state
- * @param[in] cmd
- * @param[out] res
- * @param[in] procedure_count
- * @return Return code.
  * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.18 (command),
  * sec.9.3 (coding), and 9.4 (status conditions).
  * @note Some SW1 and SW2 values are non-ISO since they originate from the
@@ -183,11 +173,6 @@ static swicc_ret_et apduh_gsm_res_get(swicc_st *const swicc_state,
 /**
  * @brief Handle the READ BINARY command in the proprietary class A0 of
  * GSM 11.11.
- * @param[in, out] swicc_state
- * @param[in] cmd
- * @param[out] res
- * @param[out] procedure_count
- * @return Return code.
  * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.3 (command),
  * sec.9.3 (coding), and 9.4 (status conditions).
  * @note Some SW1 and SW2 values are non-ISO since they originate from the
@@ -272,11 +257,6 @@ static swicc_ret_et apduh_gsm_bin_read(swicc_st *const swicc_state,
 /**
  * @brief Handle the STATUS command in the proprietary class A0 of
  * GSM 11.11.
- * @param swicc_state
- * @param cmd
- * @param res
- * @param procedure_count
- * @return Return code.
  * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.2 (command),
  * sec.9.3 (coding), and 9.4 (status conditions).
  * @note Some SW1 and SW2 values are non-ISO since they originate from the
@@ -331,11 +311,6 @@ static swicc_ret_et apduh_gsm_status(swicc_st *const swicc_state,
 /**
  * @brief Handle the RUN GSM ALGORITHM command in the proprietary class A0 of
  * GSM 11.11.
- * @param swicc_state
- * @param cmd
- * @param res
- * @param procedure_count
- * @return Return code.
  * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.16 (command),
  * sec.9.3 (coding), and 9.4 (status conditions).
  * @note Some SW1 and SW2 values are non-ISO since they originate from the
@@ -416,11 +391,6 @@ static swicc_ret_et apduh_gsm_gsm_algo_run(swicc_st *const swicc_state,
 /**
  * @brief Handle the SELECT command in the proprietary classes 0X, 4X, and 6X of
  * ETSI TS 102 221 V16.4.0.
- * @param swicc_state
- * @param cmd
- * @param res
- * @param procedure_count
- * @return Return code.
  * @note As described in 3GPP 31.101 V17.0.0 pg.19 sec.11.1.1.
  * (and ETSI TS 102 221 V16.4.0 pg.84 sec.11.1.1.)
  */
@@ -764,11 +734,6 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
 /**
  * @brief Handle the TERMINAL PROFILE command in the proprietary class 0x80 of
  * ETSI TS 102 221 V16.4.0.
- * @param swicc_state
- * @param cmd
- * @param res
- * @param procedure_count
- * @return Return code.
  * @note As described in and ETSI TS 102 221 V16.4.0 pg.133 sec.11.2.1
  */
 static swicc_apduh_ft apduh_etsi_terminal_profile;
@@ -826,11 +791,6 @@ static swicc_ret_et apduh_etsi_terminal_profile(
 /**
  * @brief Handle the STATUS command in the proprietary classes 0x8X, 0xCX, 0xEx
  * of ETSI TS 102 221 V16.4.0.
- * @param swicc_state
- * @param cmd
- * @param res
- * @param procedure_count
- * @return Return code.
  * @note As described in 3GPP 31.101 V17.0.0 pg.20 sec.11.1.2
  * (and ETSI TS 102 221 V16.4.0 pg.95 sec.11.1.2)
  */
@@ -955,11 +915,6 @@ static swicc_ret_et apduh_3gpp_status(swicc_st *const swicc_state,
 /**
  * @brief Handle the UNBLOCK PIN command in the proprietary classes 0x0X, 0x4X,
  * 0x6X of ETSI TS 102 221 V16.4.0.
- * @param swicc_state
- * @param cmd
- * @param res
- * @param procedure_count
- * @return Return code.
  * @note As described in 3GPP 31.101 V17.0.0 pg.20 sec.11.1.13
  * (and ETSI TS 102 221 V16.4.0 pg.106 sec.11.1.13)
  */
@@ -1067,11 +1022,6 @@ static swicc_ret_et apduh_3gpp_pin_unblock(swicc_st *const swicc_state,
 /**
  * @brief Handle the VERIFY PIN command in the proprietary classes 0x0X, 0x4X,
  * and 0x6X of ETSI TS 102 221 V16.4.0.
- * @param swicc_state
- * @param cmd
- * @param res
- * @param procedure_count
- * @return Return code.
  * @note As described in 3GPP 31.101 V17.0.0 pg.20 sec.11.1.9
  * (and ETSI TS 102 221 V16.4.0 pg.102 sec.11.1.9)
  */
@@ -1159,11 +1109,6 @@ static swicc_ret_et apduh_3gpp_pin_verify(swicc_st *const swicc_state,
 /**
  * @brief Handle the UPDATE BINARY command in the proprietary classes 0x0X,
  * 0x4X, and 0x6X of ETSI TS 102 221 V16.4.0.
- * @param swicc_state
- * @param cmd
- * @param res
- * @param procedure_count
- * @return Return code.
  * @note As described in 3GPP 31.101 V17.0.0 pg.20 sec.11.1.4
  * (and ETSI TS 102 221 V16.4.0 pg.96 sec.11.1.4)
  */
