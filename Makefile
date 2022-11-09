@@ -21,16 +21,14 @@ MAIN_CC_FLAGS:=\
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_LIB)/swicc/include \
 	-L$(DIR_LIB)/swicc/build \
-	$(shell pkg-config --cflags libpcsclite) \
-	-lswicc \
-	-lpcsclite
+	-lswicc
 MAIN_LIBSWICC_TARGET:=main
 
 all: main
 .PHONY: all
 
 main: $(DIR_BUILD) $(DIR_BUILD)/$(MAIN_NAME) $(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN)
-main-dbg: MAIN_LIBSWICC_TARGET:=main-dbg-clr
+main-dbg: MAIN_LIBSWICC_TARGET:=main-dbg-asan ARG="-DDEBUG_CLR"
 main-dbg: MAIN_CC_FLAGS+=-g -DDEBUG -DDEBUG_CLR -fsanitize=address
 main-dbg: main
 .PHONY: main main-dbg
