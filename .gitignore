@@ -6,7 +6,7 @@ build-lib/
 compile_flags.txt
 
 # swICC FS Disk
-*.swicc
+*.swiccfs
 
 # Logs
 *.log

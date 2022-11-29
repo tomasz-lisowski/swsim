@@ -36,6 +36,7 @@ static void print_usage(char const *const arg0)
         "\n- FS path is a location for loading and saving the swICC FS file."
         "\n- FS gen path is the JSON FS definition location for generating a swICC FS file."
         "\n- Note that if the FS gen path is given, the swICC FS file at the given path will be overwritten with the generated one."
+        "\n- The file extension for swICC FS files is '.swiccfs'."
         "\n",
         arg0);
     // clang-format on
@@ -98,7 +99,7 @@ int32_t main(int32_t const argc, char *const argv[argc])
         }
         printf("'\n");
         print_usage(argv[0U]);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
     if (server_ip == NULL)
     {
@@ -114,7 +115,7 @@ int32_t main(int32_t const argc, char *const argv[argc])
     {
         printf(CLR_TXT(CLR_RED, "File system path is mandatory.\n"));
         print_usage(argv[0U]);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
     printf("swSIM:"
            "\n  swICC FS at '%s'."
@@ -125,11 +126,12 @@ int32_t main(int32_t const argc, char *const argv[argc])
 
     swsim_st swsim_state = {0U};
     swicc_st swicc_state = {0U};
+    swicc_ret_et ret = SWICC_RET_ERROR;
 
     if (swsim_init(&swsim_state, &swicc_state, path_fsjson_load,
                    path_swiccfs) == 0)
     {
-        swicc_ret_et ret = swicc_net_client_sig_register(sig_exit_handler);
+        ret = swicc_net_client_sig_register(sig_exit_handler);
         if (ret == SWICC_RET_SUCCESS)
         {
             ret = swicc_net_client_create(&client_ctx, server_ip, server_port);
@@ -139,7 +141,14 @@ int32_t main(int32_t const argc, char *const argv[argc])
                 ret = swicc_net_client(&swicc_state, &client_ctx);
                 if (ret != SWICC_RET_SUCCESS)
                 {
-                    printf("Failed to run network client.\n");
+                    if (ret != SWICC_RET_NET_DISCONNECTED)
+                    {
+                        printf("Failed to run network client.\n");
+                    }
+                    else
+                    {
+                        printf("Client was disconnected from server.\n");
+                    }
                 }
                 swicc_net_client_destroy(&client_ctx);
             }
@@ -154,5 +163,19 @@ int32_t main(int32_t const argc, char *const argv[argc])
         }
         swicc_terminate(&swicc_state);
     }
-    return EXIT_SUCCESS;
+
+    if (ret == SWICC_RET_NET_DISCONNECTED)
+    {
+        /* Special return for when client gets disconnected. */
+        return 2;
+    }
+
+    if (ret == SWICC_RET_SUCCESS)
+    {
+        return EXIT_SUCCESS;
+    }
+    else
+    {
+        return EXIT_FAILURE;
+    }
 }

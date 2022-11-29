@@ -19,6 +19,6 @@ swSIM is an all-software SIM card. It's the first publicly available (to the bes
 
 ## Usage
 1. Start a swICC card server, e.g., [swICC PC/SC reader](https://github.com/tomasz-lisowski/swicc-drv-ifd).
-2. `./build/swsim.elf --ip 127.0.0.1 --port 37324 --fs filesystem.swicc --fs-gen ./data/usim.json`
+2. `./build/swsim.elf --ip 127.0.0.1 --port 37324 --fs filesystem.swiccfs --fs-gen ./data/usim.json`
 3. `pcsc_scan` (part of the `pcsc-tools` package) will show some details of the card.
 4. You can interact with the card as you would with a real card attached to a hardware card reader.
