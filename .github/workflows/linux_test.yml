@@ -4,10 +4,10 @@ on: [push]
 
 jobs:
   arch-20221120:
-    name: Arch 20221120.0.103865
+    name: Arch 20230122.0.120412
     runs-on: ubuntu-latest
     container:
-        image: docker://archlinux:base-devel-20221120.0.103865
+      image: docker://archlinux:base-devel-20230122.0.120412
 
     steps:
       - name: Pacman Update
@@ -44,7 +44,7 @@ jobs:
     name: Debian 11
     runs-on: ubuntu-latest
     container:
-        image: docker://debian:bullseye
+      image: docker://debian:bullseye
 
     steps:
       - name: APT Update
@@ -80,7 +80,7 @@ jobs:
     name: Fedora 37
     runs-on: ubuntu-latest
     container:
-        image: docker://fedora:37
+      image: docker://fedora:37
 
     steps:
       - name: DNF Update
@@ -116,7 +116,7 @@ jobs:
     name: openSUSE Leap 15.4
     runs-on: ubuntu-latest
     container:
-        image: docker://opensuse/leap:15.4
+      image: docker://opensuse/leap:15.4
 
     steps:
       - name: Zypper Update
