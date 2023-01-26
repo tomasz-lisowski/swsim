@@ -157,7 +157,7 @@
                             "meta": {
                                 "name": "LND"
                             },
-                            "type": "file_ef_linear-fixed",
+                            "type": "file_ef_cyclic",
                             "id": "6F44",
                             "rcrd_size": 30,
                             "contents": [
@@ -252,7 +252,7 @@
                                 "name": "Extension 3"
                             },
                             "type": "file_ef_linear-fixed",
-                            "id": "6F4B",
+                            "id": "6F4C",
                             "rcrd_size": 13,
                             "contents": [
                                 {
@@ -359,10 +359,14 @@
                             "meta": {
                                 "name": "Accumulated call meter"
                             },
-                            "type": "file_ef_linear-fixed",
+                            "type": "file_ef_cyclic",
                             "id": "6F39",
                             "rcrd_size": 3,
                             "contents": [
+                                {
+                                    "type": "hex",
+                                    "contents": "000000"
+                                },
                                 {
                                     "type": "hex",
                                     "contents": "000000"

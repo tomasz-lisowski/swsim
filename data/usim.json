@@ -324,11 +324,15 @@
                     "meta": {
                         "name": "EF.ACM"
                     },
-                    "type": "file_ef_linear-fixed",
+                    "type": "file_ef_cyclic",
                     "id": "6F39",
                     "sid": "1C",
                     "rcrd_size": 3,
                     "contents": [
+                        {
+                            "type": "hex",
+                            "contents": "000000"
+                        },
                         {
                             "type": "hex",
                             "contents": "000000"
