@@ -226,20 +226,13 @@ static swicc_ret_et apduh_gsm_bin_read(swicc_st *const swicc_state,
             return SWICC_RET_SUCCESS;
         }
 
-        /* Enqueue the file data for later retrieval using GET RESPONSE. */
-        if (swicc_apdu_rc_enq(&swicc_state->apdu_rc, file->data,
-                              len_expected) != SWICC_RET_SUCCESS)
-        {
-            res->sw1 = 0x92; /* "Memory problem." */
-            res->sw2 = 0x40;
-            res->data.len = 0U;
-            return SWICC_RET_SUCCESS;
-        }
+        /* Copy the file data to the response. */
+        memcpy(res->data.b, file->data, len_expected);
 
-        /* "Length 'XX' of the response data." where 'XX' is SW2. */
-        res->sw1 = 0x9F;
-        res->sw2 = len_expected;
-        res->data.len = 0U;
+        /* Send back the data. */
+        res->sw1 = 0x90;
+        res->sw2 = 0x00;
+        res->data.len = len_expected;
         return SWICC_RET_SUCCESS;
     case SWICC_FS_ITEM_TYPE_INVALID:
         res->sw1 = 0x94; /* "No EF selected." */
