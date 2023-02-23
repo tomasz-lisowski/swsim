@@ -217,7 +217,7 @@ static swicc_ret_et apduh_gsm_bin_read(swicc_st *const swicc_state,
             res->data.len = 0U;
             return SWICC_RET_SUCCESS;
         }
-        else if (offset > file->data_size)
+        else if (offset + len_expected > file->data_size)
         {
             res->sw1 =
                 SWICC_APDU_SW1_CHER_P1P2; /* "Incorrect parameter P1 or P2." */
