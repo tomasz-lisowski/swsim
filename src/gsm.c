@@ -152,18 +152,17 @@ int32_t gsm_select_res(swicc_fs_st const *const fs,
             10U; /* Everything except the last portion which is optional. */
 
         /* GSM specific data. */
-        /* "File characteristics." */
+        /* "File characteristics." (TS 51.011 Rel4 9.2.1 Detail 1) */
         /**
          * LSB>MSB
          *    1b Clock stop             = 0 (not allowed)
          *  + 1b Auth. alg. clock freq. = 1 (13/4 MHz)
          *  + 1b Clock stop             = 0 (high not preferred)
          *  + 1b Clock stop             = 0 (low not preferred)
-         *  + 1b 0 (from GSM 11.12 @todo Look into GSM 11.12)
-         *  + 2b RFU                    = 00
+         *  + 3b Supply voltage ind.    = 011 (1.8V Technology SIM; supports 3V/5V)
          *  + 1b CHV1                   = 1 (disabled)
          */
-        uint8_t const file_characteristic = 0b10000010;
+        uint8_t const file_characteristic = 0b10110010;
         uint32_t df_child_count_tmp;
         uint32_t ef_child_count_tmp;
         int32_t const ret_count = sim_fs_file_child_count(
