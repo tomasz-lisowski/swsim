@@ -217,7 +217,7 @@ static swicc_ret_et apduh_gsm_bin_read(swicc_st *const swicc_state,
             res->data.len = 0U;
             return SWICC_RET_SUCCESS;
         }
-        else if (offset > file->data_size)
+        else if (offset + len_expected > file->data_size)
         {
             res->sw1 =
                 SWICC_APDU_SW1_CHER_P1P2; /* "Incorrect parameter P1 or P2." */
@@ -1231,6 +1231,27 @@ static swicc_ret_et apduh_3gpp_bin_update(swicc_st *const swicc_state,
     }
 }
 
+/**
+ * @brief Handle the UPDATE BINARY command in the proprietary class 0xA0
+ * of 3GPP TS 51.011.
+ * @note As described in 3GPP TS 51.011 sec. 9.2.4
+ */
+static swicc_apduh_ft apduh_gsm_bin_update;
+static swicc_ret_et apduh_gsm_bin_update(swicc_st *const swicc_state,
+                                         swicc_apdu_cmd_st const *const cmd,
+                                         swicc_apdu_res_st *const res,
+                                         uint32_t const procedure_count)
+{
+    if ((cmd->hdr->p1 & 0b10000000) == 0b10000000)
+    {
+        /* P1 is invalid. */
+        SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_P1P2, 0U, 0U);
+        return SWICC_RET_SUCCESS;
+    }
+
+    return apduh_3gpp_bin_update(swicc_state, cmd, res, procedure_count);
+}
+
 swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
                              swicc_apdu_cmd_st const *const cmd,
                              swicc_apdu_res_st *const res,
@@ -1368,6 +1389,10 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
                 (cmd->hdr->cla.raw & 0xF0) == 0x60)
             {
                 ret = apduh_3gpp_bin_update(swicc_state, cmd, res,
+                                            procedure_count);
+            } else if (cmd->hdr->cla.raw == 0xA0)
+            {
+                ret = apduh_gsm_bin_update(swicc_state, cmd, res,
                                             procedure_count);
             }
             break;
