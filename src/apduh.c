@@ -1205,7 +1205,7 @@ static swicc_ret_et apduh_3gpp_bin_update(swicc_st *const swicc_state,
             {
                 if (offset + cmd->data->len <= file_edit->data_size)
                 {
-                    memcpy(cmd->data->b, &file_edit->data[offset],
+                    memcpy(&file_edit->data[offset], cmd->data->b,
                            cmd->data->len);
                     SWICC_APDUH_RES(res, SWICC_APDU_SW1_NORM_NONE, 0U, 0U);
                     return SWICC_RET_SUCCESS;
@@ -1390,10 +1390,11 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
             {
                 ret = apduh_3gpp_bin_update(swicc_state, cmd, res,
                                             procedure_count);
-            } else if (cmd->hdr->cla.raw == 0xA0)
+            }
+            else if (cmd->hdr->cla.raw == 0xA0)
             {
                 ret = apduh_gsm_bin_update(swicc_state, cmd, res,
-                                            procedure_count);
+                                           procedure_count);
             }
             break;
         case 0x88: /* RUN GSM ALGORITHM */
