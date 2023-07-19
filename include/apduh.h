@@ -1,6 +1,6 @@
 #pragma once
 
-#include <swicc/swicc.h>
+#include "common.h"
 
 /**
  * @brief APDU handler demux for the SIM.

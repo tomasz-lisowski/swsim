@@ -1,13 +1,15 @@
 #pragma once
 
 #include "pin.h"
+#include "proactive.h"
 #include <stdint.h>
 #include <swicc/swicc.h>
 
 /* Hold state of swSIM. */
-typedef struct swsim_st
+typedef struct swsim_s
 {
     pin_st pin[PIN_COUNT_MAX];
+    swsim__proactive_st proactive;
 } swsim_st;
 
 /**

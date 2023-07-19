@@ -1,7 +1,7 @@
 #pragma once
 
+#include "common.h"
 #include <stdint.h>
-#include <swicc/swicc.h>
 
 /**
  * @brief Parse the raw CLA byte.

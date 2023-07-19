@@ -3,6 +3,7 @@
 #include "apdu.h"
 #include "fs.h"
 #include "gsm.h"
+#include "proactive.h"
 #include "swicc/apdu.h"
 #include "swsim.h"
 #include <endian.h>
@@ -296,7 +297,7 @@ static swicc_ret_et apduh_gsm_status(swicc_st *const swicc_state,
 
     res->sw1 = SWICC_APDU_SW1_NORM_NONE;
     res->sw2 = 0U;
-    /* Safe cast due to check in if for GSM SELECT response creation. */
+    /* Safe cast due to check for GSM SELECT response creation. */
     res->data.len = *cmd->p3;
     return SWICC_RET_SUCCESS;
 }
@@ -775,6 +776,159 @@ static swicc_ret_et apduh_etsi_terminal_profile(
     }
 
     /* Terminal profile is ignored. */
+    res->sw1 = SWICC_APDU_SW1_NORM_NONE;
+    res->sw2 = 0U;
+    res->data.len = 0U;
+    return SWICC_RET_SUCCESS;
+}
+
+/**
+ * @brief Handle the FETCH command in the proprietary class 0x80 of
+ * ETSI TS 102 221 V16.4.0.
+ * @note As described in and ETSI TS 102 221 V16.4.0 pg.134 sec.11.2.3
+ */
+static swicc_apduh_ft apduh_etsi_cat_fetch;
+static swicc_ret_et apduh_etsi_cat_fetch(swicc_st *const swicc_state,
+                                         swicc_apdu_cmd_st const *const cmd,
+                                         swicc_apdu_res_st *const res,
+                                         uint32_t const procedure_count)
+{
+    /* Make sure the command is valid. */
+    if (cmd->hdr->p1 != 0x00 || cmd->hdr->p2 != 0x00)
+    {
+        res->sw1 = SWICC_APDU_SW1_CHER_P1P2_INFO;
+        res->sw2 = 0x86; /* "Incorrect parameters P1 to P2" */
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
+    /**
+     * Check if we only got Lc which means we need to send back a procedure
+     * byte.
+     */
+    if (procedure_count == 0U)
+    {
+        swsim_st *const swsim_state = swicc_state->userdata;
+        if (*cmd->p3 != swsim_state->proactive.command_length)
+        {
+            /* Expected Le to be the exact length of the command. */
+            res->sw1 = SWICC_APDU_SW1_CHER_LE;
+            res->sw2 = 0U;
+            res->data.len = 0U;
+            return SWICC_RET_SUCCESS;
+        }
+
+        memcpy(res->data.b, swsim_state->proactive.command,
+               swsim_state->proactive.command_length);
+
+        res->sw1 = SWICC_APDU_SW1_NORM_NONE;
+        res->sw2 = 0U;
+        res->data.len = swsim_state->proactive.command_length;
+        swsim_state->proactive.command_length = 0;
+        return SWICC_RET_SUCCESS;
+    }
+    else
+    {
+        /* Unexpected. */
+        res->sw1 = SWICC_APDU_SW1_CHER_UNK;
+        res->sw2 = 0U;
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+}
+
+/**
+ * @brief Handle the TERMINAL RESPONSE command in the proprietary class 0x80 of
+ * ETSI TS 102 221 V16.4.0.
+ * @note As described in and ETSI TS 102 221 V16.4.0 clause.11.2.4.
+ */
+static swicc_apduh_ft apduh_etsi_cat_terminal_response;
+static swicc_ret_et apduh_etsi_cat_terminal_response(
+    swicc_st *const swicc_state, swicc_apdu_cmd_st const *const cmd,
+    swicc_apdu_res_st *const res, uint32_t const procedure_count)
+{
+    /* Make sure the command is valid. */
+    if (cmd->hdr->p1 != 0x00 || cmd->hdr->p2 != 0x00)
+    {
+        res->sw1 = SWICC_APDU_SW1_CHER_P1P2_INFO;
+        res->sw2 = 0x86; /* "Incorrect parameters P1 to P2" */
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
+    /**
+     * Check if we only got Lc which means we need to send back a procedure
+     * byte.
+     */
+    if (procedure_count == 0U)
+    {
+        /* Get response from the terminal. */
+        res->sw1 = SWICC_APDU_SW1_PROC_ACK_ALL;
+        res->sw2 = 0U;
+        res->data.len = *cmd->p3; /* Length of expected data. */
+        return SWICC_RET_SUCCESS;
+    }
+
+    swsim_st *const swsim_state = swicc_state->userdata;
+    if (swsim_state->proactive.app_default_response_wait)
+    {
+        /* Give response to default app. */
+        swsim_state->proactive.app_default_response_wait = false;
+        /**
+         * TODO: Copy resoonse to struct.
+         */
+    }
+    else
+    {
+        /* Didn't expect a response but got it anyways? */
+    }
+
+    res->sw1 = SWICC_APDU_SW1_NORM_NONE;
+    res->sw2 = 0U;
+    res->data.len = 0U;
+    return SWICC_RET_SUCCESS;
+}
+
+/**
+ * @brief Handle the ENVELOPE command in the proprietary class 0x80 of
+ * ETSI TS 102 221 V16.4.0.
+ * @note As described in and ETSI TS 102 221 V16.4.0 clause.11.2.2.
+ */
+static swicc_apduh_ft apduh_etsi_cat_envelope;
+static swicc_ret_et apduh_etsi_cat_envelope(swicc_st *const swicc_state,
+                                            swicc_apdu_cmd_st const *const cmd,
+                                            swicc_apdu_res_st *const res,
+                                            uint32_t const procedure_count)
+{
+    /* Make sure the command is valid. */
+    if (cmd->hdr->p1 != 0x00 || cmd->hdr->p2 != 0x00)
+    {
+        res->sw1 = SWICC_APDU_SW1_CHER_P1P2_INFO;
+        res->sw2 = 0x86; /* "Incorrect parameters P1 to P2" */
+        res->data.len = 0U;
+        return SWICC_RET_SUCCESS;
+    }
+
+    /**
+     * Check if we only got Lc which means we need to send back a procedure
+     * byte.
+     */
+    if (procedure_count == 0U)
+    {
+        /* Get response from the terminal. */
+        res->sw1 = SWICC_APDU_SW1_PROC_ACK_ALL;
+        res->sw2 = 0U;
+        res->data.len = *cmd->p3; /* Length of expected data. */
+        return SWICC_RET_SUCCESS;
+    }
+
+    swsim_st *const swsim_state = swicc_state->userdata;
+    swsim_state->proactive.envelope_length = cmd->data->len;
+    memcpy(swsim_state->proactive.envelope, cmd->data->b, cmd->data->len);
+
+    /**
+     * TODO: Return the BER-TLV object described in ETSI TS 102 223.
+     */
     res->sw1 = SWICC_APDU_SW1_NORM_NONE;
     res->sw2 = 0U;
     res->data.len = 0U;
@@ -1335,6 +1489,30 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
                                                   procedure_count);
             }
             break;
+        case 0x12: /* FETCH */
+            /* ETSI */
+            if (cmd->hdr->cla.raw == 0x80)
+            {
+                ret = apduh_etsi_cat_fetch(swicc_state, cmd, res,
+                                           procedure_count);
+            }
+            break;
+        case 0x14: /* TERMINAL RESPONSE */
+            /* ETSI */
+            if (cmd->hdr->cla.raw == 0x80)
+            {
+                ret = apduh_etsi_cat_terminal_response(swicc_state, cmd, res,
+                                                       procedure_count);
+            }
+            break;
+        case 0xC2: /* ENVELOPE */
+            /* ETSI */
+            if (cmd->hdr->cla.raw == 0x80)
+            {
+                ret = apduh_etsi_cat_envelope(swicc_state, cmd, res,
+                                              procedure_count);
+            }
+            break;
         case 0xC0: /* GET RESPONSE */
             /* GSM */
             if (cmd->hdr->cla.raw == 0xA0)
@@ -1412,5 +1590,32 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
     default:
         break;
     }
+
+    /* Run proactive applications. */
+    swsim_st *sim_state = swicc_state->userdata;
+    sim_proactive_step(sim_state);
+    if (ret == SWICC_RET_SUCCESS)
+    {
+        if (res->sw1 == SWICC_APDU_SW1_NORM_NONE && res->sw2 == 0)
+        {
+            if (sim_state->proactive.command_length > 0)
+            {
+                printf("Proactive command present, overwriting status 9000 to "
+                       "91%02X len=0x%04X.\n",
+                       (uint8_t)sim_state->proactive.command_length,
+                       sim_state->proactive.command_length);
+                res->sw1 = 0x91;
+                static_assert(
+                    sizeof(sim_state->proactive.command) == 256,
+                    "Proactive command length does not fit in one byte.");
+                /**
+                 * Safe cast since the command buffer is no longer than the max
+                 * APDU length hence no longer than one byte.
+                 */
+                res->sw2 = (uint8_t)sim_state->proactive.command_length;
+            }
+        }
+    }
+
     return ret;
 }
