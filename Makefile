@@ -21,15 +21,18 @@ MAIN_CC_FLAGS:=\
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_LIB)/swicc/include \
 	-L$(DIR_LIB)/swicc/build \
-	-lswicc
-MAIN_LIBSWICC_TARGET:=main
+	-lswicc \
+	$(ARG)
+MAIN_SWICC_TARGET:=main
+MAIN_SWICC_ARG:=$(ARG_SWICC)
 
 all: main
 .PHONY: all
 
 main: $(DIR_BUILD) $(DIR_BUILD)/$(MAIN_NAME) $(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN)
-main-dbg: MAIN_LIBSWICC_TARGET:=main-dbg ARG="-DDEBUG_CLR -fsanitize=address"
-main-dbg: MAIN_CC_FLAGS+=-g -DDEBUG -DDEBUG_CLR -fsanitize=address
+main-dbg: MAIN_SWICC_TARGET:=main-dbg
+main-dbg: MAIN_SWICC_ARG+=-fsanitize=address
+main-dbg: MAIN_CC_FLAGS+=-g -fsanitize=address -DDEBUG
 main-dbg: main
 .PHONY: main main-dbg
 
@@ -39,7 +42,7 @@ $(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN): $(DIR_LIB)/swicc/build/$(LIB_PREFIX)swicc.
 
 # Build swICC.
 $(DIR_LIB)/swicc/build/$(LIB_PREFIX)swicc.$(EXT_LIB_STATIC):
-	cd $(DIR_LIB)/swicc && $(MAKE) $(MAIN_LIBSWICC_TARGET)
+	cd $(DIR_LIB)/swicc && $(MAKE) $(MAIN_SWICC_TARGET) ARG="$(MAIN_SWICC_ARG)"
 
 # Compile source files to object files.
 $(DIR_BUILD)/$(MAIN_NAME)/%.o: $(DIR_SRC)/%.c
