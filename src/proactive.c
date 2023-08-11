@@ -551,7 +551,7 @@ static swicc_ret_et proactive_cmd(
     {
         if (dry_run)
         {
-            printf("Proactive UICC Command: Encoding dry run.\n");
+            fprintf(stderr, "Proactive UICC Command: Encoding dry run.\n");
             bertlv_buf = NULL;
             bertlv_len = 0;
         }
@@ -563,8 +563,9 @@ static swicc_ret_et proactive_cmd(
             }
             bertlv_len = enc.len;
             bertlv_buf = command_buffer;
-            printf("Proactive UICC Command: Encoding real run: len=%u.\n",
-                   bertlv_len);
+            fprintf(stderr,
+                    "Proactive UICC Command: Encoding real run: len=%u.\n",
+                    bertlv_len);
         }
 
         swicc_dato_bertlv_enc_init(&enc, (uint8_t *const)bertlv_buf,
@@ -784,7 +785,7 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
 
     if (swsim_state->proactive.envelope_length > 0)
     {
-        printf("Envelope: start parsing.\n");
+        fprintf(stderr, "Envelope: start parsing.\n");
         static uint8_t const root_tag[] = {
             0xD3, /* 'D3': Menu Selection */
         };
@@ -829,7 +830,7 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
 
         if (ret_tag == SWICC_RET_SUCCESS)
         {
-            printf("Envelope: tags created.\n");
+            fprintf(stderr, "Envelope: tags created.\n");
 
             swicc_dato_bertlv_dec_st tlv_decoder;
             swicc_dato_bertlv_dec_init(&tlv_decoder,
@@ -852,8 +853,9 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
                      SWICC_DATO_BERTLV_LEN_FORM_DEFINITE_LONG) &&
                 tlv_root.tag.cla == SWICC_DATO_BERTLV_TAG_CLA_PRIVATE)
             {
-                printf("Envelope: root tag has valid class and root has valid "
-                       "length format.\n");
+                fprintf(
+                    stderr,
+                    "Envelope: root tag has valid class and root has valid length format.\n");
 
                 for (uint32_t tag_i = 0; tag_i < root_tag_count; ++tag_i)
                 {
@@ -864,7 +866,7 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
                         {
                         /* Menu Selection */
                         case 0: {
-                            printf("Envelope menu selection.\n");
+                            fprintf(stderr, "Envelope menu selection.\n");
                             swicc_dato_bertlv_dec_st
                                 tlv_decoder_device_identities;
                             swicc_dato_bertlv_st tlv_device_identities;
@@ -902,8 +904,9 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
                                 tlv_item_identifier.len.form ==
                                     SWICC_DATO_BERTLV_LEN_FORM_DEFINITE_SHORT)
                             {
-                                printf("Envelope menu selection: extracted "
-                                       "mandatory items.\n");
+                                fprintf(
+                                    stderr,
+                                    "Envelope menu selection: extracted mandatory items.\n");
 
                                 /**
                                  * This field is optional so this decode may
@@ -927,9 +930,10 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
 
                                 uint8_t const item_identifier =
                                     tlv_decoder_item_identifier.buf[0];
-                                printf("Envelope menu selection: item "
-                                       "identifier 0x%02X.\n",
-                                       item_identifier);
+                                fprintf(
+                                    stderr,
+                                    "Envelope menu selection: item identifier 0x%02X.\n",
+                                    item_identifier);
                                 if (item_identifier >=
                                     APP_DEFAULT__SCREEN__INVALID)
                                 {

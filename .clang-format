@@ -1,4 +1,5 @@
 ---
 BasedOnStyle: Microsoft
 ColumnLimit: 80
+BreakStringLiterals: false
 ...

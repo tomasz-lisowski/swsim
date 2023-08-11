@@ -37,24 +37,25 @@ int32_t swsim_init(swsim_st *const swsim_state, swicc_st *const swicc_state,
                 }
                 else
                 {
-                    printf("Failed to register a proprietary APDU handler.\n");
+                    fprintf(stderr,
+                            "Failed to register a proprietary APDU handler.\n");
                 }
             }
             else
             {
-                printf("Failed to mount disk.\n");
+                fprintf(stderr, "Failed to mount disk.\n");
             }
         }
         else
         {
-            printf("Failed to save disk.\n");
+            fprintf(stderr, "Failed to save disk.\n");
         }
         swicc_disk_unload(&disk);
     }
     else
     {
-        printf("Failed to load/generate disk: %s.\n",
-               swicc_dbg_ret_str(ret_disk));
+        fprintf(stderr, "Failed to load/generate disk: %s.\n",
+                swicc_dbg_ret_str(ret_disk));
     }
     return -1;
 }

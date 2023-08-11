@@ -5,6 +5,7 @@
 #include "gsm.h"
 #include "proactive.h"
 #include "swicc/apdu.h"
+#include "swicc/common.h"
 #include "swsim.h"
 #include <endian.h>
 #include <stddef.h>
@@ -696,9 +697,9 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
              * Make sure to fail when extended APDUs are used since they are
              * unsupported here.
              */
-            static_assert(SWICC_DATA_MAX == SWICC_DATA_MAX_SHRT,
-                          "Response buffer length might not fit in SW2 "
-                          "if SW1 is 0x61");
+            static_assert(
+                SWICC_DATA_MAX == SWICC_DATA_MAX_SHRT,
+                "Response buffer length might not fit in SW2 if SW1 is 0x61");
 
             /* The file that was requested to be selected. */
             swicc_fs_file_st *const file_selected =
@@ -1600,8 +1601,9 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
         {
             if (sim_state->proactive.command_length > 0)
             {
-                printf("Proactive command present, overwriting status 9000 to "
-                       "91%02X len=0x%04X.\n",
+                fprintf(
+                    stderr,
+                    "Proactive command present, overwriting status 9000 to 91%02X len=0x%04X.\n",
                        (uint8_t)sim_state->proactive.command_length,
                        sim_state->proactive.command_length);
                 res->sw1 = 0x91;

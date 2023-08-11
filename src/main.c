@@ -17,7 +17,7 @@ swicc_net_client_st client_ctx = {0U};
 
 static void sig_exit_handler(__attribute__((unused)) int signum)
 {
-    printf("Shutting down...\n");
+    fprintf(stderr, "Shutting down...\n");
     swicc_net_client_destroy(&client_ctx);
     exit(0);
 }
@@ -25,7 +25,7 @@ static void sig_exit_handler(__attribute__((unused)) int signum)
 static void print_usage(char const *const arg0)
 {
     // clang-format off
-    printf("Usage: %s"
+    fprintf(stderr, "Usage: %s"
         "\n["CLR_KND("--help")" | "CLR_KND("-h")"]"
         "\n<"CLR_KND("--ip")" "CLR_VAL("ip")" | "CLR_KND("-i")" "CLR_VAL("ip")">"
         "\n<"CLR_KND("--port")" "CLR_VAL("port")" | "CLR_KND("-p")" "CLR_VAL("port")">"
@@ -91,38 +91,40 @@ int32_t main(int32_t const argc, char *const argv[argc])
     }
     if (optind < argc)
     {
-        printf("%s: invalid arguments -- '", argv[0U]);
+        fprintf(stderr, "%s: invalid arguments -- '", argv[0U]);
         while (optind < argc)
         {
-            printf("%s%c", argv[optind], optind + 1 == argc ? '\0' : ' ');
+            fprintf(stderr, "%s%c", argv[optind],
+                    optind + 1 == argc ? '\0' : ' ');
             optind++;
         }
-        printf("'\n");
+        fprintf(stderr, "'\n");
         print_usage(argv[0U]);
         return EXIT_FAILURE;
     }
     if (server_ip == NULL)
     {
         server_ip = SERVER_IP_DEF;
-        printf("Using default server IP: '%s'.\n", server_ip);
+        fprintf(stderr, "Using default server IP: '%s'.\n", server_ip);
     }
     if (server_port == NULL)
     {
         server_port = SERVER_PORT_DEF;
-        printf("Using default server port: '%s'.\n", server_port);
+        fprintf(stderr, "Using default server port: '%s'.\n", server_port);
     }
     if (path_swiccfs == NULL)
     {
-        printf(CLR_TXT(CLR_RED, "File system path is mandatory.\n"));
+        fprintf(stderr, CLR_TXT(CLR_RED, "File system path is mandatory.\n"));
         print_usage(argv[0U]);
         return EXIT_FAILURE;
     }
-    printf("swSIM:"
-           "\n  swICC FS at '%s'."
-           "\n  FS JSON at  '%s'."
-           "\n  Connect to   %s:%s.\n\n",
-           path_swiccfs, path_fsjson_load == NULL ? "?" : path_fsjson_load,
-           server_ip, server_port);
+    fprintf(stderr,
+            "swSIM:"
+            "\n  swICC FS at '%s'."
+            "\n  FS JSON at  '%s'."
+            "\n  Connect to   %s:%s.\n\n",
+            path_swiccfs, path_fsjson_load == NULL ? "?" : path_fsjson_load,
+            server_ip, server_port);
 
     swsim_st swsim_state = {0U};
     swicc_st swicc_state = {0U};
@@ -137,29 +139,30 @@ int32_t main(int32_t const argc, char *const argv[argc])
             ret = swicc_net_client_create(&client_ctx, server_ip, server_port);
             if (ret == SWICC_RET_SUCCESS)
             {
-                printf("Press ctrl-c to exit.\n");
+                fprintf(stderr, "Press ctrl-c to exit.\n");
                 ret = swicc_net_client(&swicc_state, &client_ctx);
                 if (ret != SWICC_RET_SUCCESS)
                 {
                     if (ret != SWICC_RET_NET_DISCONNECTED)
                     {
-                        printf("Failed to run network client.\n");
+                        fprintf(stderr, "Failed to run network client.\n");
                     }
                     else
                     {
-                        printf("Client was disconnected from server.\n");
+                        fprintf(stderr,
+                                "Client was disconnected from server.\n");
                     }
                 }
                 swicc_net_client_destroy(&client_ctx);
             }
             else
             {
-                printf("Failed to create a client.\n");
+                fprintf(stderr, "Failed to create a client.\n");
             }
         }
         else
         {
-            printf("Failed to register signal handler.\n");
+            fprintf(stderr, "Failed to register signal handler.\n");
         }
         swicc_terminate(&swicc_state);
     }
