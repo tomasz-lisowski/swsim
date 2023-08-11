@@ -15,8 +15,8 @@
 
 /**
  * @brief Handle the SELECT command in the proprietary class A0 of GSM 11.11.
- * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.1 (command),
- * sec.9.3 (coding), and 9.4 (status conditions).
+ * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) clause.9.2.1 (command),
+ * clause.9.3 (coding), and 9.4 (status conditions).
  * @note Some SW1 and SW2 values are non-ISO since they originate from the
  * GSM 11.11 standard and seem to exist there and only there.
  */
@@ -135,8 +135,8 @@ static swicc_ret_et apduh_gsm_select(swicc_st *const swicc_state,
 /**
  * @brief Handle the GET RESPONSE command in the proprietary class A0 of
  * GSM 11.11.
- * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.18 (command),
- * sec.9.3 (coding), and 9.4 (status conditions).
+ * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) clause.9.2.18
+ * (command), clause.9.3 (coding), and 9.4 (status conditions).
  * @note Some SW1 and SW2 values are non-ISO since they originate from the
  * GSM 11.11 standard and seem to exist there and only there.
  */
@@ -175,8 +175,8 @@ static swicc_ret_et apduh_gsm_res_get(swicc_st *const swicc_state,
 /**
  * @brief Handle the READ BINARY command in the proprietary class A0 of
  * GSM 11.11.
- * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.3 (command),
- * sec.9.3 (coding), and 9.4 (status conditions).
+ * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) clause.9.2.3 (command),
+ * clause.9.3 (coding), and 9.4 (status conditions).
  * @note Some SW1 and SW2 values are non-ISO since they originate from the
  * GSM 11.11 standard and seem to exist there and only there.
  */
@@ -208,7 +208,7 @@ static swicc_ret_et apduh_gsm_bin_read(swicc_st *const swicc_state,
     switch (file->hdr_item.type)
     {
     /**
-     * GSM 11.11 v4.21.1 pg.26 sec.8 table.8 indicates that READ BINARY shall
+     * GSM 11.11 v4.21.1 clause.8 table.8 indicates that READ BINARY shall
      * only work for transparent EFs.
      */
     case SWICC_FS_ITEM_TYPE_FILE_EF_TRANSPARENT:
@@ -252,8 +252,8 @@ static swicc_ret_et apduh_gsm_bin_read(swicc_st *const swicc_state,
 /**
  * @brief Handle the STATUS command in the proprietary class A0 of
  * GSM 11.11.
- * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.2 (command),
- * sec.9.3 (coding), and 9.4 (status conditions).
+ * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) clause.9.2.2 (command),
+ * clause.9.3 (coding), and 9.4 (status conditions).
  * @note Some SW1 and SW2 values are non-ISO since they originate from the
  * GSM 11.11 standard and seem to exist there and only there.
  */
@@ -306,8 +306,8 @@ static swicc_ret_et apduh_gsm_status(swicc_st *const swicc_state,
 /**
  * @brief Handle the RUN GSM ALGORITHM command in the proprietary class A0 of
  * GSM 11.11.
- * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) sec.9.2.16 (command),
- * sec.9.3 (coding), and 9.4 (status conditions).
+ * @note As described in GSM 11.11 v4.21.1 (ETS 300 608) clause.9.2.16
+ * (command), clause.9.3 (coding), and 9.4 (status conditions).
  * @note Some SW1 and SW2 values are non-ISO since they originate from the
  * GSM 11.11 standard and seem to exist there and only there.
  */
@@ -386,8 +386,8 @@ static swicc_ret_et apduh_gsm_gsm_algo_run(swicc_st *const swicc_state,
 /**
  * @brief Handle the SELECT command in the proprietary classes 0X, 4X, and 6X of
  * ETSI TS 102 221 V16.4.0.
- * @note As described in 3GPP 31.101 V17.0.0 pg.19 sec.11.1.1.
- * (and ETSI TS 102 221 V16.4.0 pg.84 sec.11.1.1.)
+ * @note As described in 3GPP 31.101 V17.0.0 clause.11.1.1.
+ * (and ETSI TS 102 221 V16.4.0 clause.11.1.1.)
  */
 static swicc_apduh_ft apduh_3gpp_select;
 static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
@@ -586,7 +586,7 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
                 swicc_fs_id_kt const fid = be16toh(*(uint16_t *)cmd->data->b);
                 /**
                  * Special FID reserved for current application. ETSI TS 102 221
-                 * V16.4.0 sec.8.3 pg.59.
+                 * V16.4.0 clause.8.3.
                  */
                 if (fid == 0x7FFF)
                 {
@@ -729,7 +729,7 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
 /**
  * @brief Handle the TERMINAL PROFILE command in the proprietary class 0x80 of
  * ETSI TS 102 221 V16.4.0.
- * @note As described in and ETSI TS 102 221 V16.4.0 pg.133 sec.11.2.1
+ * @note As described in and ETSI TS 102 221 V16.4.0 clause.11.2.1
  */
 static swicc_apduh_ft apduh_etsi_terminal_profile;
 static swicc_ret_et apduh_etsi_terminal_profile(
@@ -786,7 +786,7 @@ static swicc_ret_et apduh_etsi_terminal_profile(
 /**
  * @brief Handle the FETCH command in the proprietary class 0x80 of
  * ETSI TS 102 221 V16.4.0.
- * @note As described in and ETSI TS 102 221 V16.4.0 pg.134 sec.11.2.3
+ * @note As described in and ETSI TS 102 221 V16.4.0 clause.11.2.3
  */
 static swicc_apduh_ft apduh_etsi_cat_fetch;
 static swicc_ret_et apduh_etsi_cat_fetch(swicc_st *const swicc_state,
@@ -939,8 +939,8 @@ static swicc_ret_et apduh_etsi_cat_envelope(swicc_st *const swicc_state,
 /**
  * @brief Handle the STATUS command in the proprietary classes 0x8X, 0xCX, 0xEx
  * of ETSI TS 102 221 V16.4.0.
- * @note As described in 3GPP 31.101 V17.0.0 pg.20 sec.11.1.2
- * (and ETSI TS 102 221 V16.4.0 pg.95 sec.11.1.2)
+ * @note As described in 3GPP 31.101 V17.0.0 clause.11.1.2
+ * (and ETSI TS 102 221 V16.4.0 clause.11.1.2)
  */
 static swicc_apduh_ft apduh_3gpp_status;
 static swicc_ret_et apduh_3gpp_status(swicc_st *const swicc_state,
@@ -1063,8 +1063,8 @@ static swicc_ret_et apduh_3gpp_status(swicc_st *const swicc_state,
 /**
  * @brief Handle the UNBLOCK PIN command in the proprietary classes 0x0X, 0x4X,
  * 0x6X of ETSI TS 102 221 V16.4.0.
- * @note As described in 3GPP 31.101 V17.0.0 pg.20 sec.11.1.13
- * (and ETSI TS 102 221 V16.4.0 pg.106 sec.11.1.13)
+ * @note As described in 3GPP 31.101 V17.0.0 clause.11.1.13
+ * (and ETSI TS 102 221 V16.4.0 clause.11.1.13)
  */
 static swicc_apduh_ft apduh_3gpp_pin_unblock;
 static swicc_ret_et apduh_3gpp_pin_unblock(swicc_st *const swicc_state,
@@ -1138,7 +1138,7 @@ static swicc_ret_et apduh_3gpp_pin_unblock(swicc_st *const swicc_state,
     /* Perform the requested operation. */
     {
         /**
-         * @todo Implement the exact logic described in sec.11.1.13.
+         * @todo Implement the exact logic described in clause.11.1.13.
          */
 
         /* When empty, used to acquire the retry counter. */
@@ -1170,8 +1170,8 @@ static swicc_ret_et apduh_3gpp_pin_unblock(swicc_st *const swicc_state,
 /**
  * @brief Handle the VERIFY PIN command in the proprietary classes 0x0X, 0x4X,
  * and 0x6X of ETSI TS 102 221 V16.4.0.
- * @note As described in 3GPP 31.101 V17.0.0 pg.20 sec.11.1.9
- * (and ETSI TS 102 221 V16.4.0 pg.102 sec.11.1.9)
+ * @note As described in 3GPP 31.101 V17.0.0 clause.11.1.9
+ * (and ETSI TS 102 221 V16.4.0 clause.11.1.9)
  */
 static swicc_apduh_ft apduh_3gpp_pin_verify;
 static swicc_ret_et apduh_3gpp_pin_verify(swicc_st *const swicc_state,
@@ -1232,7 +1232,7 @@ static swicc_ret_et apduh_3gpp_pin_verify(swicc_st *const swicc_state,
     /* Perform the requested operation. */
     {
         /**
-         * @todo Implement the exact logic described in sec.11.1.9.
+         * @todo Implement the exact logic described in clause.11.1.9.
          */
         if (*cmd->p3 == 0x00)
         {
@@ -1257,8 +1257,8 @@ static swicc_ret_et apduh_3gpp_pin_verify(swicc_st *const swicc_state,
 /**
  * @brief Handle the UPDATE BINARY command in the proprietary classes 0x0X,
  * 0x4X, and 0x6X of ETSI TS 102 221 V16.4.0.
- * @note As described in 3GPP 31.101 V17.0.0 pg.20 sec.11.1.4
- * (and ETSI TS 102 221 V16.4.0 pg.96 sec.11.1.4)
+ * @note As described in 3GPP 31.101 V17.0.0 clause.11.1.4
+ * (and ETSI TS 102 221 V16.4.0 clause.11.1.4)
  */
 static swicc_apduh_ft apduh_3gpp_bin_update;
 static swicc_ret_et apduh_3gpp_bin_update(swicc_st *const swicc_state,
@@ -1464,7 +1464,7 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
 
         /**
          * The constraints on what instructions live in what CLA is described in
-         * ETSI TS 102 221 V16.4.0 pg.77 sec.10.1.2 table.10.5.
+         * ETSI TS 102 221 V16.4.0 clause.10.1.2 table.10.5.
          */
         switch (cmd->hdr->ins)
         {
