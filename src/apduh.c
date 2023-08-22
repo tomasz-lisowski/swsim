@@ -3,6 +3,7 @@
 #include "apdu.h"
 #include "fs.h"
 #include "gsm.h"
+#include "milenage.h"
 #include "proactive.h"
 #include "swicc/apdu.h"
 #include "swicc/common.h"
@@ -361,13 +362,11 @@ static swicc_ret_et apduh_gsm_gsm_algo_run(swicc_st *const swicc_state,
         return SWICC_RET_SUCCESS;
     }
 
-    /* A3/A8 individual subscriber authentication key. */
-    uint8_t const ki[16] = {
-        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x07,
-    };
-
-    gsm_algo(ki, cmd->data->b, res->data.b);
+    /**
+     * K (sometimes called Ki) is the A3/A8 individual subscriber authentication
+     * key.
+     */
+    gsm_algo(swsim_state->milenage.k, cmd->data->b, res->data.b);
     res->data.len = 12U;
     /* Copy response to the GET RESPONSE buffer. */
     if (swicc_apdu_rc_enq(&swicc_state->apdu_rc, res->data.b, res->data.len) ==
@@ -1387,9 +1386,172 @@ static swicc_ret_et apduh_3gpp_bin_update(swicc_st *const swicc_state,
 }
 
 /**
+ * @brief Handle the AUTHENTICATE command in the proprietary classes 0x0X, 0x4X,
+ * and 0x6X of ETSI TS 102 221 V16.4.0.
+ * @note As described in 3GPP 31.101 V17.0.0 clause.11.1.16
+ * (and ETSI TS 102 221 V16.4.0 clause.11.1.16)
+ */
+static swicc_apduh_ft apduh_3gpp_authenticate;
+static swicc_ret_et apduh_3gpp_authenticate(swicc_st *const swicc_state,
+                                            swicc_apdu_cmd_st const *const cmd,
+                                            swicc_apdu_res_st *const res,
+                                            uint32_t const procedure_count)
+{
+    swsim_st *const swsim_state = (swsim_st *)swicc_state->userdata;
+    if (swsim_state == NULL)
+    {
+        SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_UNK, 0U, 0U);
+        return SWICC_RET_SUCCESS;
+    }
+
+    if (cmd->hdr->p1 != 0x00)
+    {
+        /* P1 is invalid. */
+        SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_P1P2, 0U, 0U);
+        return SWICC_RET_SUCCESS;
+    }
+
+    if (procedure_count == 0U)
+    {
+        /**
+         * Unexpected because before sending a procedure, no data should have
+         * been received.
+         */
+        if (cmd->data->len != 0U)
+        {
+            SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_UNK, 0U, 0U);
+            return SWICC_RET_SUCCESS;
+        }
+
+        /* If the command has data, send a procedure. */
+        if (*cmd->p3 > 0)
+        {
+            SWICC_APDUH_RES(res, SWICC_APDU_SW1_PROC_ACK_ALL, 0U,
+                            *cmd->p3 /* Length of expected data. */);
+            return SWICC_RET_SUCCESS;
+        }
+    }
+
+    if (procedure_count >= 1U && cmd->data->len != *cmd->p3)
+    {
+        /* Invalid length was given. */
+        SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_LEN, 0U, 0U);
+        return SWICC_RET_SUCCESS;
+    }
+
+    /* Parse and handle.*/
+    {
+        enum ref_data_e
+        {
+            REF_DATA_GLOBAL = 0,
+            REF_DATA_SPECIFIC = 1,
+            REF_DATA_IMPLICIT, /* Doesn't have a value. */
+        } ref_data = (cmd->hdr->p2 & 0b10000000) >> 7;
+        (void)ref_data;
+
+        if (cmd->hdr->p2 == 0x00)
+        {
+            ref_data = REF_DATA_IMPLICIT;
+        }
+        uint8_t const ref_data_num = cmd->hdr->p2 & 0b00011111;
+        (void)ref_data_num;
+
+        bool const rfu = (cmd->hdr->p2 & 0b01100000) != 0x00;
+        if (rfu)
+        {
+            SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_P1P2, 0U, 0);
+            return SWICC_RET_SUCCESS;
+        }
+
+        uint8_t const *const rid =
+            swicc_state->fs.va.cur_adf.hdr_spec.adf.aid.rid;
+        uint8_t const *const pix =
+            swicc_state->fs.va.cur_adf.hdr_spec.adf.aid.pix;
+
+        uint8_t const rid_usim[] = {0xA0, 0x00, 0x00, 0x00, 0x87};
+        uint8_t const pix_usim[] = {0x10, 0x02, 0xFF, 0xFF, 0xFF, 0xFF,
+                                    0x89, 0x17, 0x05, 0x00, 0x00};
+
+        if (memcmp(rid, rid_usim, sizeof(rid_usim)) == 0 &&
+            memcmp(pix, pix_usim, sizeof(pix_usim)) == 0)
+        {
+            /* Performing UMTS authentication using milenage. */
+            if (cmd->data->len != 1 /* length of RAND */ + 16 /* RAND */ +
+                                      1 /* length of auth token */ +
+                                      16 /* auth token */)
+            {
+                SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_LEN, 0U, 0);
+                return SWICC_RET_SUCCESS;
+            }
+
+            uint16_t const rand_len = cmd->data->b[0];
+            if (rand_len != 16)
+            {
+                SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_LEN, 0U, 0);
+                return SWICC_RET_SUCCESS;
+            }
+            uint16_t const token_auth_len = cmd->data->b[1 + rand_len];
+            if (token_auth_len != 16)
+            {
+                SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_LEN, 0U, 0);
+                return SWICC_RET_SUCCESS;
+            }
+
+            uint8_t const *const rand = &cmd->data->b[1];
+            uint8_t const *const token_auth = &cmd->data->b[1 + 16 + 1];
+
+            swicc_ret_et const ret_milenage =
+                milenage(&swsim_state->milenage, rand, token_auth, res->data.b,
+                         &res->data.len);
+            if (ret_milenage != SWICC_RET_SUCCESS)
+            {
+                /**
+                 * 9862 = "Authentication error, incorrect MAC" per 3GPP
+                 * TS 31.102 V17.5.0 clause.7.3.1.
+                 */
+                SWICC_APDUH_RES(res, 0x98, 0x62, 0);
+                return SWICC_RET_SUCCESS;
+            }
+            else
+            {
+                if (res->data.len > UINT8_MAX ||
+                    swicc_apdu_rc_enq(&swicc_state->apdu_rc, res->data.b,
+                                      res->data.len) == SWICC_RET_SUCCESS)
+                {
+                    /* Safe cast due to check in the 'if'. */
+                    SWICC_APDUH_RES(res, SWICC_APDU_SW1_NORM_BYTES_AVAILABLE,
+                                    (uint8_t)res->data.len, 0U);
+                    return SWICC_RET_SUCCESS;
+                }
+                else
+                {
+                    SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_UNK, 0U, 0U);
+                    return SWICC_RET_SUCCESS;
+                }
+
+                SWICC_APDUH_RES(res, SWICC_APDU_SW1_NORM_NONE, 0U,
+                                res->data.len);
+                return SWICC_RET_SUCCESS;
+            }
+        }
+        else
+        {
+            /* Not inside of a recognized application so returning a "not
+             * allowed" error. TODO: Check what to return in this case, maybe
+             * "not implemented"? */
+            SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_CMD, 0U, 0);
+            return SWICC_RET_SUCCESS;
+        }
+    }
+
+    SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_UNK, 0U, 0);
+    return SWICC_RET_SUCCESS;
+}
+
+/**
  * @brief Handle the UPDATE BINARY command in the proprietary class 0xA0
  * of 3GPP TS 51.011.
- * @note As described in 3GPP TS 51.011 sec. 9.2.4
+ * @note As described in 3GPP TS 51.011 clause. 9.2.4
  */
 static swicc_apduh_ft apduh_gsm_bin_update;
 static swicc_ret_et apduh_gsm_bin_update(swicc_st *const swicc_state,
@@ -1446,6 +1608,19 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
              * 3GPP.
              */
             ret = apduh_3gpp_bin_update(swicc_state, cmd, res, procedure_count);
+            break;
+        case 0x88: /* AUTHENTICATE */
+            /**
+             * Override the default AUTHENTICATE command with AUTHENTICATE as
+             * defined by ETSI + 3GPP.
+             */
+            if ((cmd->hdr->cla.raw & 0xF0) == 0x00 ||
+                (cmd->hdr->cla.raw & 0xF0) == 0x40 ||
+                (cmd->hdr->cla.raw & 0xF0) == 0x60)
+            {
+                ret = apduh_3gpp_authenticate(swicc_state, cmd, res,
+                                              procedure_count);
+            }
             break;
         default:
             break;
@@ -1583,6 +1758,14 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
                 ret = apduh_gsm_gsm_algo_run(swicc_state, cmd, res,
                                              procedure_count);
             }
+            /* ETSI + 3GPP */
+            else if ((cmd->hdr->cla.raw & 0xF0) == 0x00 ||
+                     (cmd->hdr->cla.raw & 0xF0) == 0x40 ||
+                     (cmd->hdr->cla.raw & 0xF0) == 0x60)
+            {
+                ret = apduh_3gpp_authenticate(swicc_state, cmd, res,
+                                              procedure_count);
+            }
             break;
         default:
             break;
@@ -1604,8 +1787,8 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
                 fprintf(
                     stderr,
                     "Proactive command present, overwriting status 9000 to 91%02X len=0x%04X.\n",
-                       (uint8_t)sim_state->proactive.command_length,
-                       sim_state->proactive.command_length);
+                    (uint8_t)sim_state->proactive.command_length,
+                    sim_state->proactive.command_length);
                 res->sw1 = 0x91;
                 static_assert(
                     sizeof(sim_state->proactive.command) == 256,

@@ -19,6 +19,7 @@ static void sig_exit_handler(__attribute__((unused)) int signum)
 {
     fprintf(stderr, "Shutting down...\n");
     swicc_net_client_destroy(&client_ctx);
+    fflush(NULL);
     exit(0);
 }
 

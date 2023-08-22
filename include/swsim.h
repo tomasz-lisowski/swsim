@@ -1,5 +1,6 @@
 #pragma once
 
+#include "milenage.h"
 #include "pin.h"
 #include "proactive.h"
 #include <stdint.h>
@@ -10,6 +11,7 @@ typedef struct swsim_s
 {
     pin_st pin[PIN_COUNT_MAX];
     swsim__proactive_st proactive;
+    milenage_st milenage;
 } swsim_st;
 
 /**

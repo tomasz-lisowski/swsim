@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Spec - Data Converter</title>
+</head>
+
+<body>
+    <h1>4x4 Column-major to Row-major Form Initializer List</h1>
+    <textarea id="input-col2row" onChange="Col2Row(this.value);" type="text"
+        rows="10" cols="80"></textarea>
+    <br>
+    <br>
+    <code id="output-col2row"
+        style="display: block; font-size:large; background: LightGreen; padding: 2em; overflow-wrap: break-word;"></code>
+    <script>
+        function Col2Row(str) {
+            const str_arr = str.replaceAll(' ', '').split(/\r?\n|\r|\n/g);
+
+            let output = "";
+            for (str_hex of str_arr) {
+                if (str_hex.length / 2 != 16) {
+                    throw "Expected 16 bytes, got ".concat(str_hex.length / 2);
+                }
+
+                const bytearr_col = new Uint8Array(16);
+                for (let i = 0; i < 16; ++i) {
+                    const str_byte = str_hex.substring(i * 2, (i * 2) + 2);
+                    bytearr_col[i] = parseInt(str_byte, 16);
+                }
+
+                const bytearr_row = new Uint8Array(16);
+                for (let col = 0; col < 4; ++col) {
+                    for (let row = 0; row < 4; ++row) {
+                        bytearr_row[col + (row * 4)] = bytearr_col[row + (col * 4)];
+                    }
+                }
+
+                output = output.concat("{");
+                for (let col = 0; col < 4; ++col) {
+                    output = output.concat("{");
+                    for (let row = 0; row < 4; ++row) {
+                        output = output.concat("0x");
+                        output = output.concat(bytearr_row[row + (col * 4)].toString(16).toUpperCase().padStart(2, '0'));
+                        if (row + 1 < 4) {
+                            output = output.concat(",");
+                        }
+                    }
+                    output = output.concat("},");
+                }
+                output = output.concat("},");
+            }
+            document.getElementById("output-col2row").innerHTML = output;
+            document.getElementById("input-col2row").value = "";
+        }
+    </script>
+    <br>
+    <br>
+    <br>
+    <br>
+    <h1>n Bytes to Initializer</h1>
+    <textarea id="input-bytes2initializer"
+        onChange="bytesToInitializerList(this.value);" type="text" rows="10"
+        cols="80"></textarea>
+    <br>
+    <br>
+    <code id="output-bytes2initializer"
+        style="display: block; font-size:large; background: LightGreen; padding: 2em; overflow-wrap: break-word;"></code>
+    <script>
+        function bytesToInitializerList(str) {
+            const str_nospace = str.replaceAll(' ', '');
+
+            if (str_nospace.length % 2 != 0) {
+                throw "Expected even number of bytes, got ".concat(str_nospace.length);
+            }
+
+            const data = new Uint8Array(1024);
+            for (let i = 0; i < str_nospace.length / 2; ++i) {
+                const str_byte = str_nospace.substring(i * 2, (i * 2) + 2);
+                data[i] = parseInt(str_byte, 16);
+            }
+
+            let output = "";
+            for (let i = 0; i < str_nospace.length / 2; ++i) {
+                output = output.concat("0x");
+                const number = data[i].toString(16).toUpperCase().padStart(2, '0');
+                output = output.concat(number);
+                output = output.concat(",");
+            }
+            document.getElementById("output-bytes2initializer").innerHTML = output;
+            document.getElementById("input-bytes2initializer").value = "";
+        }
+    </script>
+    <br>
+    <br>
+    <br>
+    <br>
+    <h1>Initializer to n Bytes</h1>
+    <textarea id="input-initializer2bytes"
+        onChange="initializerToBytes(this.value);" type="text" rows="10"
+        cols="80"></textarea>
+    <br>
+    <br>
+    <code id="output-initializer2bytes"
+        style="display: block; font-size:large; background: LightGreen; padding: 2em; overflow-wrap: break-word;"></code>
+    <script>
+        function initializerToBytes(str) {
+            const str_nospace = str.replaceAll(' ', '');
+            const str_hex = str_nospace.replaceAll("0x", "").replaceAll(",", '');
+
+            if (str_hex.length % 2 != 0) {
+                throw "Expected even number of bytes, got ".concat(str_hex.length);
+            }
+
+            const data = new Uint8Array(1024);
+            for (let i = 0; i < str_hex.length / 2; ++i) {
+                const str_byte = str_hex.substring(i * 2, (i * 2) + 2);
+                data[i] = parseInt(str_byte, 16);
+            }
+
+            let output = "";
+            for (let i = 0; i < str_hex.length / 2; ++i) {
+                const number = data[i].toString(16).toUpperCase().padStart(2, '0');
+                output = output.concat(number);
+            }
+            document.getElementById("output-initializer2bytes").innerHTML = output;
+            document.getElementById("input-initializer2bytes").value = "";
+        }
+    </script>
+</body>
+
+</html>

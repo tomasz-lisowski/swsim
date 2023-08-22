@@ -236,7 +236,7 @@
                     "sid": "07",
                     "contents": {
                         "type": "hex",
-                        "contents": "089910070000500190"
+                        "contents": "089999990000000010"
                     }
                 },
                 {
@@ -317,7 +317,7 @@
                     "sid": "04",
                     "contents": {
                         "type": "hex",
-                        "contents": "BEFF9F9DE73E0408400170730000002E00000000"
+                        "contents": "BEFFBF9DE73E0408400170730000002E00000000"
                     }
                 },
                 {

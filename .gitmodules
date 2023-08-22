@@ -4,3 +4,6 @@
 [submodule "lib/swicc"]
 	path = lib/swicc
 	url = git@github.com:tomasz-lisowski/swicc.git
+[submodule "lib/tau"]
+	path = lib/tau
+	url = git@github.com:jasmcaus/tau.git
