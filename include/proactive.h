@@ -462,6 +462,44 @@ typedef enum swsim__proactive__item_icon_identifier_list__icon_list_qualifier_e
     // clang-format on
 } swsim__proactive__item_icon_identifier_list__icon_list_qualifier_et;
 
+/* ETSI TS 102 223 V17.2.0 clause.8.16. */
+typedef enum swsim__proactive__tone__tone_e
+{
+    // clang-format off
+    SWSIM__PROACTIVE__TONE__TONE__STANDARD_SUPERVISORY_DIAL_TONE = 0x01,
+    SWSIM__PROACTIVE__TONE__TONE__STANDARD_SUPERVISORY_CALLED_SUBSCRIBER_BUSY = 0x02,
+    SWSIM__PROACTIVE__TONE__TONE__STANDARD_SUPERVISORY_CONGESTION = 0x03,
+    SWSIM__PROACTIVE__TONE__TONE__STANDARD_SUPERVISORY_RADIO_PATH_ACKNOWLEDGE = 0x04,
+    SWSIM__PROACTIVE__TONE__TONE__STANDARD_SUPERVISORY_RADIO_PATH_NOT_AVAILABLE_CALL_DROPPED = 0x05,
+    SWSIM__PROACTIVE__TONE__TONE__STANDARD_SUPERVISORY_ERROR_SPECIAL_INFORMATION = 0x06,
+    SWSIM__PROACTIVE__TONE__TONE__STANDARD_SUPERVISORY_CALL_WAITING_TONE = 0x07,
+    SWSIM__PROACTIVE__TONE__TONE__STANDARD_SUPERVISORY_RINGING_TONE = 0x08,
+
+    SWSIM__PROACTIVE__TONE__TONE__TERMINAL_PROPRIETARY_GENERAL_BEEP = 0x10,
+    SWSIM__PROACTIVE__TONE__TONE__TERMINAL_PROPRIETARY_POSITIVE_ACKNOWLEDGEMENT_TONE = 0x11,
+    SWSIM__PROACTIVE__TONE__TONE__TERMINAL_PROPRIETARY_NEGATIVE_ACKNOWLEDGEMENT_TONE = 0x12,
+    SWSIM__PROACTIVE__TONE__TONE__TERMINAL_PROPRIETARY_RINGING_TONE_USER_DEFINED = 0x13,
+    SWSIM__PROACTIVE__TONE__TONE__TERMINAL_PROPRIETARY_ALERT_TONE_USER_DEFINED = 0x14,
+    SWSIM__PROACTIVE__TONE__TONE__TERMINAL_PROPRIETARY_CRITICAL_ALERT = 0x15,
+    SWSIM__PROACTIVE__TONE__TONE__TERMINAL_PROPRIETARY_VIBRATE = 0x20,
+
+    SWSIM__PROACTIVE__TONE__TONE__THEMED_HAPPY_TONE = 0x30,
+    SWSIM__PROACTIVE__TONE__TONE__THEMED_SAD_TONE = 0x31,
+    SWSIM__PROACTIVE__TONE__TONE__THEMED_URGENT_ACTION_TONE = 0x32,
+    SWSIM__PROACTIVE__TONE__TONE__THEMED_QUESTION_TONE = 0x33,
+    SWSIM__PROACTIVE__TONE__TONE__THEMED_MESSAGE_RECEIVED_TONE = 0x34,
+
+    SWSIM__PROACTIVE__TONE__TONE__MELODY_1 = 0x40,
+    SWSIM__PROACTIVE__TONE__TONE__MELODY_2 = 0x41,
+    SWSIM__PROACTIVE__TONE__TONE__MELODY_3 = 0x42,
+    SWSIM__PROACTIVE__TONE__TONE__MELODY_4 = 0x43,
+    SWSIM__PROACTIVE__TONE__TONE__MELODY_5 = 0x44,
+    SWSIM__PROACTIVE__TONE__TONE__MELODY_6 = 0x45,
+    SWSIM__PROACTIVE__TONE__TONE__MELODY_7 = 0x46,
+    SWSIM__PROACTIVE__TONE__TONE__MELODY_8 = 0x47,
+    // clang-format on
+} swsim__proactive__tone__tone_et;
+
 /* ETSI TS 102 223 V17.2.0 clause.8.2. */
 typedef struct swsim__proactive__tlv__alpha_identifier_s
 {
@@ -614,6 +652,13 @@ typedef struct swsim__proactive__tlv__item_text_attribute_list_s
         *text_formatting;
 } swsim__proactive__tlv__item_text_attribute_list_st;
 
+/* ETSI TS 102 223 V17.2.0 clause.8.16. */
+typedef struct swsim__proactive__tlv__tone_s
+{
+    bool valid;
+    swsim__proactive__tone__tone_et tone;
+} swsim__proactive__tlv__tone_st;
+
 /* ETSI TS 102 223 V17.2.0 clause.6.6.1. */
 typedef struct swsim__proactive__command__display_text_s
 {
@@ -660,6 +705,17 @@ typedef struct swsim__proactive__command__launch_browser_s
     swsim__proactive__tlv__text_string_st text_string_user_password;
 } swsim__proactive__command__launch_browser_st;
 
+/* ETSI TS 102 223 V17.2.0 clause.6.6.5. */
+typedef struct swsim__proactive__command__play_tone_s
+{
+    swsim__proactive__tlv__alpha_identifier_st alpha_identifier;
+    swsim__proactive__tlv__tone_st tone;
+    swsim__proactive__tlv__duration_st duration;
+    swsim__proactive__tlv__icon_identifier_st icon_identifier;
+    swsim__proactive__tlv__text_attribute_st text_attribute;
+    swsim__proactive__tlv__frame_identifier_st frame_identifier;
+} swsim__proactive__command__play_tone_st;
+
 typedef struct swsim__proactive__command_s
 {
     /**
@@ -676,6 +732,7 @@ typedef struct swsim__proactive__command_s
         swsim__proactive__command__display_text_st display_text;
         swsim__proactive__command__set_up_menu_st set_up_menu;
         swsim__proactive__command__launch_browser_st launch_browser;
+        swsim__proactive__command__play_tone_st play_tone;
     };
 } swsim__proactive__command_st;
 

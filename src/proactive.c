@@ -520,6 +520,34 @@ static swicc_ret_et proactive_cmd__tlv__item(
     return SWICC_RET_SUCCESS;
 }
 
+/**
+ * BER-TLV per ETSI TS 102 223 V17.2.0 clause.8.16.
+ * Tag per ETSI TS 101 220 V17.1.0 clause.7.2 table.7.23.
+ */
+static swicc_ret_et proactive_cmd__tlv__tone(
+    swicc_dato_bertlv_enc_st *const encoder,
+    swsim__proactive__tlv__tone_st const *const tlv_tone)
+{
+    swicc_dato_bertlv_tag_st bertlv_tag;
+    if (swicc_dato_bertlv_tag_create(&bertlv_tag, 0x8E) != SWICC_RET_SUCCESS)
+    {
+        return SWICC_RET_ERROR;
+    }
+
+    if (tlv_tone->valid)
+    {
+        uint8_t const tone = (uint8_t)tlv_tone->tone;
+        if (swicc_dato_bertlv_enc_data(encoder, &tone, 1) !=
+                SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_hdr(encoder, &bertlv_tag) !=
+                SWICC_RET_SUCCESS)
+        {
+            return SWICC_RET_ERROR;
+        }
+    }
+    return SWICC_RET_SUCCESS;
+}
+
 static swicc_ret_et proactive_cmd(
     swsim__proactive__command_st const *const command,
     uint8_t (*const command_buffer)[SWICC_DATA_MAX],
@@ -605,8 +633,23 @@ static swicc_ret_et proactive_cmd(
             ret_command_specific = SWICC_RET_SUCCESS;
             break;
         case SWSIM__PROACTIVE__COMMAND_TYPE__GEOGRAPHICAL_LOCATION_REQUEST:
-        case SWSIM__PROACTIVE__COMMAND_TYPE__PLAY_TONE:
             break;
+        case SWSIM__PROACTIVE__COMMAND_TYPE__PLAY_TONE: {
+            if (/* clang-format off */
+                proactive_cmd__tlv__frame_identifier(&enc_nstd, &command->play_tone.frame_identifier) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__text_attribute(&enc_nstd, &command->play_tone.text_attribute) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__icon_identifier(&enc_nstd, &command->play_tone.icon_identifier) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__duration(&enc_nstd, &command->play_tone.duration) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__tone(&enc_nstd, &command->play_tone.tone) != SWICC_RET_SUCCESS ||
+                /* Mandatory not enforced. */
+                proactive_cmd__tlv__alpha_identifier(&enc_nstd, &command->play_tone.alpha_identifier) != SWICC_RET_SUCCESS
+                /* clang-format on */)
+            {
+                break;
+            }
+            ret_command_specific = SWICC_RET_SUCCESS;
+            break;
+        }
         case SWSIM__PROACTIVE__COMMAND_TYPE__DISPLAY_TEXT:
             if (/* clang-format off */
                 proactive_cmd__tlv__frame_identifier(&enc_nstd, &command->display_text.frame_identifier) != SWICC_RET_SUCCESS ||
@@ -769,6 +812,7 @@ typedef enum app_default__screen_e
     APP_DEFAULT__SCREEN__DISPLAY_TEXT,
     APP_DEFAULT__SCREEN__SET_UP_MENU,
     APP_DEFAULT__SCREEN__SET_UP_MENU__RUN,
+    APP_DEFAULT__SCREEN__PLAY_TONE,
     APP_DEFAULT__SCREEN__INVALID,
 } app_default__screen_et;
 
@@ -963,6 +1007,11 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
                                             swsim_state->proactive.app_default
                                                 .select_screen_new =
                                                 APP_DEFAULT__SCREEN__SET_UP_MENU;
+                                            break;
+                                        case 0x04:
+                                            swsim_state->proactive.app_default
+                                                .select_screen_new =
+                                                APP_DEFAULT__SCREEN__PLAY_TONE;
                                             break;
                                         default:
                                             break;
@@ -1349,6 +1398,82 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
                                             .select_screen_new =
                                             APP_DEFAULT__SCREEN__HOME;
                                         break;
+                                    case APP_DEFAULT__SCREEN__PLAY_TONE:
+                                        switch (item_identifier)
+                                        {
+                                        case 0x01:
+                                            swsim_state->proactive.app_default
+                                                .select_screen_new =
+                                                APP_DEFAULT__SCREEN__HOME;
+                                            break;
+                                        case 0x02: {
+                                            swsim__proactive__command__play_tone_st const
+                                                command_play_tone = {
+                                                    .alpha_identifier =
+                                                        {
+                                                            .valid = false,
+                                                        },
+                                                    .tone =
+                                                        {
+                                                            .valid = true,
+                                                            .tone =
+                                                                SWSIM__PROACTIVE__TONE__TONE__STANDARD_SUPERVISORY_ERROR_SPECIAL_INFORMATION,
+                                                        },
+                                                    .duration =
+                                                        {
+                                                            .valid = false,
+                                                        },
+                                                    .icon_identifier =
+                                                        {
+                                                            .valid = false,
+                                                        },
+                                                    .text_attribute =
+                                                        {
+                                                            .valid = false,
+                                                        },
+                                                    .frame_identifier =
+                                                        {
+                                                            .valid = false,
+                                                        },
+                                                };
+
+                                            swsim__proactive__command_st const command = {
+                                                .command_number = 0,
+                                                .command_type =
+                                                    SWSIM__PROACTIVE__COMMAND_TYPE__PLAY_TONE,
+                                                .command_qualifier =
+                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__PLAY_TONE__00_VIBRATE_OPTIONAL |
+                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__PLAY_TONE__17_RFU,
+                                                .device_identities =
+                                                    {
+                                                        .valid = true,
+                                                        .destination =
+                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__TERMINAL,
+                                                        .source =
+                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
+                                                    },
+                                                .play_tone = command_play_tone,
+                                            };
+
+                                            swicc_ret_et const ret =
+                                                proactive_cmd(
+                                                    &command,
+                                                    &swsim_state->proactive
+                                                         .command,
+                                                    &swsim_state->proactive
+                                                         .command_length);
+                                            if (ret == SWICC_RET_SUCCESS)
+                                            {
+                                                swsim_state->proactive
+                                                    .app_default_response_wait =
+                                                    true;
+                                            }
+                                        }
+                                        break;
+                                        default:
+                                            break;
+                                        }
+                                        break;
                                     default:
                                         break;
                                     }
@@ -1432,9 +1557,10 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
             swsim_state->proactive.app_default.select_screen_last !=
                 APP_DEFAULT__SCREEN__HOME)
         {
-            uint8_t const item_count = 3;
-            static char const *const item_text[3] = {
-                "C: LAUNCH BROWSER", "C: DISPLAY TEXT", "C: SET UP MENU"};
+            uint8_t const item_count = 4;
+            static char const *const item_text[4] = {
+                "C: LAUNCH BROWSER", "C: DISPLAY TEXT", "C: SET UP MENU",
+                "C: PLAY TONE"};
             for (uint8_t item_i = 0; item_i < item_count; ++item_i)
             {
                 item[item_i].valid = true;
@@ -1508,6 +1634,27 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
             command.set_up_menu.alpha_identifier.valid = true;
             command.set_up_menu.alpha_identifier.alpha_identifier =
                 "C: SET UP MENU";
+            command.set_up_menu.item_count = item_count;
+            command.set_up_menu.item = item;
+            command_created = true;
+        }
+        else if (swsim_state->proactive.app_default.select_screen_new ==
+                     APP_DEFAULT__SCREEN__PLAY_TONE &&
+                 swsim_state->proactive.app_default.select_screen_last !=
+                     APP_DEFAULT__SCREEN__PLAY_TONE)
+        {
+            uint8_t const item_count = 2;
+            static char const *const item_text[2] = {"Back", "Run"};
+            for (uint8_t item_i = 0; item_i < item_count; ++item_i)
+            {
+                item[item_i].valid = true;
+                item[item_i].item_identifier = item_i + 1;
+                item[item_i].item_text_string = item_text[item_i];
+            }
+
+            command.set_up_menu.alpha_identifier.valid = true;
+            command.set_up_menu.alpha_identifier.alpha_identifier =
+                "C: PLAY TONE";
             command.set_up_menu.item_count = item_count;
             command.set_up_menu.item = item;
             command_created = true;
