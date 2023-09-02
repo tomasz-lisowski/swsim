@@ -500,6 +500,83 @@ typedef enum swsim__proactive__tone__tone_e
     // clang-format on
 } swsim__proactive__tone__tone_et;
 
+/* ETSI TS 102 223 V17.2.0 clause.8.52. */
+typedef enum swsim__proactive__bearer_description__bearer_type_e
+{
+    // clang-format off
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__RESERVED_GSM_3GPP_0 = 0x01,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__RESERVED_GSM_3GPP_1 = 0x02,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__DEFAULT_BEARER_FOR_REQUESTED_TRANSPORT_LAYER = 0x03,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__LOCAL_LINK_TECHNOLOGY_INDEPENDENT = 0x04,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__BLUETOOTH = 0x05,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__IRDA = 0x06,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__RS232 = 0x07,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__CDMA2000_PACKET_DATA_SERVICE = 0x08,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__RESERVED_GSM_3GPP_2 = 0x09,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__RESERVED_3GPP_IWLAN = 0x0A,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__RESERVED_3GPP_EUTRAN_NGRAN_SATELLITENGRAN_MAPPEDUTRANPACKETSERVICE = 0x0B,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__RESERVED_3GPP_NGRAN_SATELLITENGRAN = 0x0C,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__RESERVED_3GPP_FUTURE_USE_0 = 0x0D,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__RESERVED_3GPP_FUTURE_USE_1 = 0x0E,
+    SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__USB = 0x10,
+    // clang-format on
+} swsim__proactive__bearer_description__bearer_type_et;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.59. */
+typedef enum swsim__proactive__uicc_terminal_interface_transport_level__transport_protocol_type_e
+{
+    // clang-format off
+    SWSIM__PROACTIVE__UICC_TERMINAL_INTERFACE_TRANSPORT_LEVEL__TRANSPORT_PROTOCOL_TYPE__UDP_CLIENT_MODE_REMOTE_CONNECTION = 0x01,
+    SWSIM__PROACTIVE__UICC_TERMINAL_INTERFACE_TRANSPORT_LEVEL__TRANSPORT_PROTOCOL_TYPE__TCP_CLIENT_MODE_REMOTE_CONNECTION = 0x02,
+    SWSIM__PROACTIVE__UICC_TERMINAL_INTERFACE_TRANSPORT_LEVEL__TRANSPORT_PROTOCOL_TYPE__TCP_SERVER_MODE = 0x03,
+    SWSIM__PROACTIVE__UICC_TERMINAL_INTERFACE_TRANSPORT_LEVEL__TRANSPORT_PROTOCOL_TYPE__UDP_CLIENT_MODE_LOCAL_CONNECTION = 0x04,
+    SWSIM__PROACTIVE__UICC_TERMINAL_INTERFACE_TRANSPORT_LEVEL__TRANSPORT_PROTOCOL_TYPE__TCP_CLIENT_MODE_LOCAL_CONNECTION = 0x05,
+    SWSIM__PROACTIVE__UICC_TERMINAL_INTERFACE_TRANSPORT_LEVEL__TRANSPORT_PROTOCOL_TYPE__DIRECT_COMMUNICATION_CHANNEL = 0x06,
+    // clang-format on
+} swsim__proactive__uicc_terminal_interface_transport_level__transport_protocol_type_et;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.58. */
+typedef enum swsim__proactive__other_address__address_type_e
+{
+    // clang-format off
+    SWSIM__PROACTIVE__OTHER_ADDRESS__ADDRESS_TYPE__IPV4 = 0x21,
+    SWSIM__PROACTIVE__OTHER_ADDRESS__ADDRESS_TYPE__IPV6 = 0x57,
+    // clang-format on
+} swsim__proactive__other_address__address_type_et;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.1. */
+typedef enum swsim__proactive__address__type_of_number_e
+{
+    // clang-format off
+    SWSIM__PROACTIVE__ADDRESS__TYPE_OF_NUMBER__UNKNOWN = 0b000,
+    SWSIM__PROACTIVE__ADDRESS__TYPE_OF_NUMBER__INTERNATIONAL_NUMBER = 0b001,
+    SWSIM__PROACTIVE__ADDRESS__TYPE_OF_NUMBER__NATIONAL_NUMBER = 0b010,
+    SWSIM__PROACTIVE__ADDRESS__TYPE_OF_NUMBER__NETWORK_SPECIFIC_NUMBER = 0b011,
+    // clang-format on
+} swsim__proactive__address__type_of_number_et;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.1. */
+typedef enum swsim__proactive__address__numbering_plan_identification_e
+{
+    // clang-format off
+    SWSIM__PROACTIVE__ADDRESS__NUMBERING_PLAN_IDENTIFICATION__UNKNOWN = 0b0000,
+    SWSIM__PROACTIVE__ADDRESS__NUMBERING_PLAN_IDENTIFICATION__ISDN_TELEPHONY_NUMBERING_PLAN = 0b0001,
+    SWSIM__PROACTIVE__ADDRESS__NUMBERING_PLAN_IDENTIFICATION__DATA_NUMBERING_PLAN = 0b0011,
+    SWSIM__PROACTIVE__ADDRESS__NUMBERING_PLAN_IDENTIFICATION__TELEX_NUMBERING_PLAN = 0b0100,
+    SWSIM__PROACTIVE__ADDRESS__NUMBERING_PLAN_IDENTIFICATION__PRIVATE_NUMBERING_PLAN = 0b1001,
+    SWSIM__PROACTIVE__ADDRESS__NUMBERING_PLAN_IDENTIFICATION__RESERVED_FOR_EXTENSION = 0b1111,
+    // clang-format on
+} swsim__proactive__address__numbering_plan_identification_et;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.68. */
+typedef enum swsim__proactive__remote_entity_address__coding_type_e
+{
+    // clang-format off
+    SWSIM__PROACTIVE__REMOTE_ENTITY_ADDRESS__CODING_TYPE__IEEE_802_16_2009_ADDRESS_48BIT = 0x00,
+    SWSIM__PROACTIVE__REMOTE_ENTITY_ADDRESS__CODING_TYPE__IRDA_DEVICE_ADDRESS_32BIT = 0x01,
+    // clang-format on
+} swsim__proactive__remote_entity_address__coding_type_et;
+
 /* ETSI TS 102 223 V17.2.0 clause.8.2. */
 typedef struct swsim__proactive__tlv__alpha_identifier_s
 {
@@ -623,6 +700,7 @@ typedef struct swsim__proactive__tlv__provisioning_file_reference_s
 typedef struct swsim__proactive__tlv__network_access_name_s
 {
     bool valid;
+    uint8_t const network_access_name_length;
     uint8_t const *network_access_name; /* At least 3 bytes long. */
 } swsim__proactive__tlv__network_access_name_st;
 
@@ -658,6 +736,109 @@ typedef struct swsim__proactive__tlv__tone_s
     bool valid;
     swsim__proactive__tone__tone_et tone;
 } swsim__proactive__tlv__tone_st;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.52. */
+typedef struct swsim__proactive__tlv__bearer_description_s
+{
+    bool valid;
+    swsim__proactive__bearer_description__bearer_type_et bearer_type;
+    uint8_t bearer_parameter_count;
+    uint8_t const *bearer_parameter;
+} swsim__proactive__tlv__bearer_description_st;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.55. */
+typedef struct swsim__proactive__tlv__buffer_size_s
+{
+    bool valid;
+    uint16_t buffer_size;
+    /**
+     * When sent by UICC, indicates how many bytes are requested from the
+     * terminal. When sent by the terminal in TERMINAL RESPONSE, indicates how
+     * many bytes are available.
+     */
+} swsim__proactive__tlv__buffer_size_st;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.59. */
+typedef struct swsim__proactive__tlv__uicc_terminal_interface_transport_level_s
+{
+    bool valid;
+    swsim__proactive__uicc_terminal_interface_transport_level__transport_protocol_type_et
+        transport_protocol_type;
+    uint16_t port_number;
+} swsim__proactive__tlv__uicc_terminal_interface_transport_level_st;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.58. */
+typedef struct swsim__proactive__tlv__other_address_s
+{
+    bool valid;
+
+    /**
+     * A null Local address shall be coded with Length = '00', and no Value
+     * part. In that case, the terminal shall request a dynamic address; the
+     * type of address and the address shall be provided by the terminal (placed
+     * in TERMINAL RESPONSE).
+     */
+    bool null;
+
+    swsim__proactive__other_address__address_type_et address_type;
+    union {
+        uint8_t ipv4[4];
+        uint8_t ipv6[16];
+    };
+} swsim__proactive__tlv__other_address_st;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.1. */
+typedef struct swsim__proactive__tlv__address_s
+{
+    bool valid;
+    swsim__proactive__address__type_of_number_et type_of_number;
+    swsim__proactive__address__numbering_plan_identification_et
+        numbering_plan_identification;
+    uint8_t dialing_number_length;
+    uint8_t const *dialing_number;
+} swsim__proactive__tlv__address_st;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.3. */
+typedef struct swsim__proactive__tlv__subaddress_s
+{
+    bool valid;
+
+    /**
+     * XXX: Per ETSI TS 131 102 V17.10.0 clause.4.4.2.3, there is also an alpha
+     * identifier before the rest of the items. Problem is that the length of
+     * the dialing number/SSC string is determined from the length of the data
+     * object, but the alpha identifier can have variable length which makes
+     * that impossible. This is why the alpha identifier is omitted here.
+     */
+
+    swsim__proactive__address__type_of_number_et type_of_number;
+    swsim__proactive__address__numbering_plan_identification_et
+        numbering_plan_identification;
+    uint8_t dialing_number_ssc[10];
+
+    /**
+     * Record in EF_CCP1 containing associated capability/configuration
+     * parameters required for the call. If unused, set to 0xFF.
+     */
+    uint8_t capability_configuration1_record_identifier;
+
+    /**
+     * Record in the EF_EXT1 containing an associated called party subaddress or
+     * additional data. If unused, set to 0xFF.
+     */
+    uint8_t extension1_record_identifier;
+} swsim__proactive__tlv__subaddress_st;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.68. */
+typedef struct swsim__proactive__tlv__remote_entity_address_s
+{
+    bool valid;
+    swsim__proactive__remote_entity_address__coding_type_et coding_type;
+    union {
+        uint8_t ieee_802_16_2009[6];
+        uint8_t irda[4];
+    };
+} swsim__proactive__tlv__remote_entity_address_st;
 
 /* ETSI TS 102 223 V17.2.0 clause.6.6.1. */
 typedef struct swsim__proactive__command__display_text_s
@@ -716,6 +897,59 @@ typedef struct swsim__proactive__command__play_tone_s
     swsim__proactive__tlv__frame_identifier_st frame_identifier;
 } swsim__proactive__command__play_tone_st;
 
+typedef enum swsim__proactive__command__open_channel__type_e
+{
+    SWSIM__PROACTIVE__COMMAND__OPEN_CHANNEL__TYPE__CS_BEARER,
+    SWSIM__PROACTIVE__COMMAND__OPEN_CHANNEL__TYPE__PACKET_DATA_SERVICE_BEARER,
+    SWSIM__PROACTIVE__COMMAND__OPEN_CHANNEL__TYPE__LOCAL_BEARER,
+    SWSIM__PROACTIVE__COMMAND__OPEN_CHANNEL__TYPE__DEFAULT_NETWORK_BEARER,
+} swsim__proactive__command__open_channel__type_e;
+/* ETSI TS 102 223 V17.2.0 clause.. */
+typedef struct swsim__proactive__command__open_channel_s
+{
+    swsim__proactive__tlv__alpha_identifier_st alpha_identifier;
+    swsim__proactive__tlv__icon_identifier_st icon_identifier;
+    swsim__proactive__tlv__bearer_description_st bearer_description;
+    swsim__proactive__tlv__buffer_size_st buffer_size;
+    swsim__proactive__tlv__text_string_st text_string_user_password;
+    swsim__proactive__tlv__uicc_terminal_interface_transport_level_st
+        uicc_terminal_interface_transport_level;
+    swsim__proactive__tlv__other_address_st data_destination_address;
+    swsim__proactive__tlv__text_attribute_st text_attribute;
+    swsim__proactive__tlv__frame_identifier_st frame_identifier;
+
+    swsim__proactive__command__open_channel__type_e type;
+    union {
+        struct
+        {
+            swsim__proactive__tlv__address_st address;
+            swsim__proactive__tlv__subaddress_st subaddress;
+            swsim__proactive__tlv__duration_st duration1;
+            swsim__proactive__tlv__duration_st duration2;
+            swsim__proactive__tlv__other_address_st other_address_local_address;
+            swsim__proactive__tlv__text_string_st text_string_user_login;
+        } cs_bearer;
+        struct
+        {
+            swsim__proactive__tlv__other_address_st other_address_local_address;
+            swsim__proactive__tlv__text_string_st text_string_user_login;
+            swsim__proactive__tlv__network_access_name_st network_access_name;
+        } packet_data_service_bearer;
+        struct
+        {
+            swsim__proactive__tlv__duration_st duration1;
+            swsim__proactive__tlv__duration_st duration2;
+            swsim__proactive__tlv__remote_entity_address_st
+                remote_entity_address;
+        } local_bearer;
+        struct
+        {
+            swsim__proactive__tlv__other_address_st other_address_local_address;
+            swsim__proactive__tlv__text_string_st text_string_user_login;
+        } default_network_bearer;
+    };
+} swsim__proactive__command__open_channel_st;
+
 typedef struct swsim__proactive__command_s
 {
     /**
@@ -733,6 +967,7 @@ typedef struct swsim__proactive__command_s
         swsim__proactive__command__set_up_menu_st set_up_menu;
         swsim__proactive__command__launch_browser_st launch_browser;
         swsim__proactive__command__play_tone_st play_tone;
+        swsim__proactive__command__open_channel_st open_channel;
     };
 } swsim__proactive__command_st;
 

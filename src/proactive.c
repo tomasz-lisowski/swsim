@@ -548,6 +548,340 @@ static swicc_ret_et proactive_cmd__tlv__tone(
     return SWICC_RET_SUCCESS;
 }
 
+/**
+ * BER-TLV per ETSI TS 102 223 V17.2.0 clause.8.52.
+ * Tag per ETSI TS 101 220 V17.1.0 clause.7.2 table.7.23.
+ */
+static swicc_ret_et proactive_cmd__tlv__bearer_description(
+    swicc_dato_bertlv_enc_st *const encoder,
+    swsim__proactive__tlv__bearer_description_st const
+        *const tlv_bearer_description)
+{
+    swicc_dato_bertlv_tag_st bertlv_tag;
+    if (swicc_dato_bertlv_tag_create(&bertlv_tag, 0xB5) != SWICC_RET_SUCCESS)
+    {
+        return SWICC_RET_ERROR;
+    }
+
+    if (tlv_bearer_description->valid)
+    {
+        uint8_t const bearer_type =
+            (uint8_t)tlv_bearer_description->bearer_type;
+        if (swicc_dato_bertlv_enc_data(
+                encoder, tlv_bearer_description->bearer_parameter,
+                tlv_bearer_description->bearer_parameter_count) !=
+                SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_data(encoder, &bearer_type, 1) !=
+                SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_hdr(encoder, &bertlv_tag) !=
+                SWICC_RET_SUCCESS)
+        {
+            return SWICC_RET_ERROR;
+        }
+    }
+    return SWICC_RET_SUCCESS;
+}
+
+/**
+ * BER-TLV per ETSI TS 102 223 V17.2.0 clause.8.55.
+ * Tag per ETSI TS 101 220 V17.1.0 clause.7.2 table.7.23.
+ */
+static swicc_ret_et proactive_cmd__tlv__buffer_size(
+    swicc_dato_bertlv_enc_st *const encoder,
+    swsim__proactive__tlv__buffer_size_st const *const tlv_buffer_size)
+{
+    swicc_dato_bertlv_tag_st bertlv_tag;
+    if (swicc_dato_bertlv_tag_create(&bertlv_tag, 0xB9) != SWICC_RET_SUCCESS)
+    {
+        return SWICC_RET_ERROR;
+    }
+
+    if (tlv_buffer_size->valid)
+    {
+        if (swicc_dato_bertlv_enc_data(
+                encoder, (uint8_t const *const)&tlv_buffer_size->buffer_size,
+                2U) != SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_hdr(encoder, &bertlv_tag) !=
+                SWICC_RET_SUCCESS)
+        {
+            return SWICC_RET_ERROR;
+        }
+    }
+    return SWICC_RET_SUCCESS;
+}
+
+/**
+ * BER-TLV per ETSI TS 102 223 V17.2.0 clause.8.59.
+ * Tag per ETSI TS 101 220 V17.1.0 clause.7.2 table.7.23.
+ */
+static swicc_ret_et proactive_cmd__tlv__uicc_terminal_interface_transport_level(
+    swicc_dato_bertlv_enc_st *const encoder,
+    swsim__proactive__tlv__uicc_terminal_interface_transport_level_st const
+        *const tlv_uicc_terminal_interface_transport_level)
+{
+    swicc_dato_bertlv_tag_st bertlv_tag;
+    if (swicc_dato_bertlv_tag_create(&bertlv_tag, 0xBC) != SWICC_RET_SUCCESS)
+    {
+        return SWICC_RET_ERROR;
+    }
+
+    if (tlv_uicc_terminal_interface_transport_level->valid)
+    {
+        uint8_t const transport_protocol_type =
+            (uint8_t)tlv_uicc_terminal_interface_transport_level
+                ->transport_protocol_type;
+        if (swicc_dato_bertlv_enc_data(
+                encoder,
+                (uint8_t const
+                     *const)&tlv_uicc_terminal_interface_transport_level
+                    ->port_number,
+                2U) != SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_data(encoder, &transport_protocol_type, 1U) !=
+                SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_hdr(encoder, &bertlv_tag) !=
+                SWICC_RET_SUCCESS)
+        {
+            return SWICC_RET_ERROR;
+        }
+    }
+    return SWICC_RET_SUCCESS;
+}
+
+/**
+ * BER-TLV per ETSI TS 102 223 V17.2.0 clause.8.58.
+ * Tag per ETSI TS 101 220 V17.1.0 clause.7.2 table.7.23.
+ */
+static swicc_ret_et proactive_cmd__tlv__other_address(
+    swicc_dato_bertlv_enc_st *const encoder,
+    swsim__proactive__tlv__other_address_st const *const tlv_other_address)
+{
+    swicc_dato_bertlv_tag_st bertlv_tag;
+    if (swicc_dato_bertlv_tag_create(&bertlv_tag, 0xBE) != SWICC_RET_SUCCESS)
+    {
+        return SWICC_RET_ERROR;
+    }
+
+    if (tlv_other_address->valid)
+    {
+        if (tlv_other_address->null == false)
+        {
+            switch (tlv_other_address->address_type)
+            {
+            case SWSIM__PROACTIVE__OTHER_ADDRESS__ADDRESS_TYPE__IPV4:
+                if (swicc_dato_bertlv_enc_data(
+                        encoder, tlv_other_address->ipv4,
+                        sizeof(tlv_other_address->ipv4)) != SWICC_RET_SUCCESS)
+                {
+                    return SWICC_RET_ERROR;
+                }
+                break;
+            case SWSIM__PROACTIVE__OTHER_ADDRESS__ADDRESS_TYPE__IPV6:
+                if (swicc_dato_bertlv_enc_data(
+                        encoder, tlv_other_address->ipv6,
+                        sizeof(tlv_other_address->ipv6)) != SWICC_RET_SUCCESS)
+                {
+                    return SWICC_RET_ERROR;
+                }
+                break;
+            }
+
+            uint8_t const address_type =
+                (uint8_t)tlv_other_address->address_type;
+            if (swicc_dato_bertlv_enc_data(encoder, &address_type, 1U) !=
+                SWICC_RET_SUCCESS)
+            {
+                return SWICC_RET_ERROR;
+            }
+        }
+        else
+        {
+            /**
+             * When null is set, we don't send the value part, so the length
+             * becomes 0.
+             */
+        }
+        if (swicc_dato_bertlv_enc_hdr(encoder, &bertlv_tag) !=
+            SWICC_RET_SUCCESS)
+        {
+            return SWICC_RET_ERROR;
+        }
+    }
+    return SWICC_RET_SUCCESS;
+}
+
+/**
+ * BER-TLV per ETSI TS 102 223 V17.2.0 clause.8.1.
+ * Tag per ETSI TS 101 220 V17.1.0 clause.7.2 table.7.23.
+ */
+static swicc_ret_et proactive_cmd__tlv__address(
+    swicc_dato_bertlv_enc_st *const encoder,
+    swsim__proactive__tlv__address_st const *const tlv_address)
+{
+    swicc_dato_bertlv_tag_st bertlv_tag;
+    if (swicc_dato_bertlv_tag_create(&bertlv_tag, 0x86) != SWICC_RET_SUCCESS)
+    {
+        return SWICC_RET_ERROR;
+    }
+
+    if (tlv_address->valid)
+    {
+        uint8_t const ton_npi =
+            (uint8_t)((uint8_t)((((uint8_t)tlv_address->type_of_number) &
+                                 (uint8_t)0b00000111)
+                                << 4U) |
+                      (tlv_address->numbering_plan_identification &
+                       (uint8_t)0b00001111)) |
+            (uint8_t)0b10000000;
+        if (swicc_dato_bertlv_enc_data(encoder, tlv_address->dialing_number,
+                                       tlv_address->dialing_number_length) !=
+                SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_data(encoder, &ton_npi, 1U) !=
+                SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_hdr(encoder, &bertlv_tag) !=
+                SWICC_RET_SUCCESS)
+        {
+            return SWICC_RET_ERROR;
+        }
+    }
+    return SWICC_RET_SUCCESS;
+}
+
+/**
+ * BER-TLV per ETSI TS 102 223 V17.2.0 clause.8.3.
+ * Tag per ETSI TS 101 220 V17.1.0 clause.7.2 table.7.23.
+ */
+static swicc_ret_et proactive_cmd__tlv__subaddress(
+    swicc_dato_bertlv_enc_st *const encoder,
+    swsim__proactive__tlv__subaddress_st const *const tlv_subaddress)
+{
+    swicc_dato_bertlv_tag_st bertlv_tag;
+    if (swicc_dato_bertlv_tag_create(&bertlv_tag, 0x88) != SWICC_RET_SUCCESS)
+    {
+        return SWICC_RET_ERROR;
+    }
+
+    if (tlv_subaddress->valid)
+    {
+        uint8_t const ton_npi =
+            (uint8_t)((uint8_t)((((uint8_t)tlv_subaddress->type_of_number) &
+                                 (uint8_t)0b00000111)
+                                << 4U) |
+                      (tlv_subaddress->numbering_plan_identification &
+                       (uint8_t)0b00001111)) |
+            (uint8_t)0b10000000;
+        if (swicc_dato_bertlv_enc_data(
+                encoder, &tlv_subaddress->extension1_record_identifier, 1U) !=
+                SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_data(
+                encoder,
+                &tlv_subaddress->capability_configuration1_record_identifier,
+                1U) != SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_data(
+                encoder, tlv_subaddress->dialing_number_ssc,
+                sizeof(tlv_subaddress->dialing_number_ssc)) !=
+                SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_data(encoder, &ton_npi, 1U) !=
+                SWICC_RET_SUCCESS ||
+            /**
+             * NOTE: Per ETSI TS 102 223 V17.2.0 clause.8.3, we omit the length
+             * of BCD number/SSC contents. Normally it would go right here per
+             * ETSI TS 131 102 V17.10.0 clause.4.4.2.3.
+             */
+            swicc_dato_bertlv_enc_hdr(encoder, &bertlv_tag) !=
+                SWICC_RET_SUCCESS)
+        {
+            return SWICC_RET_ERROR;
+        }
+    }
+    return SWICC_RET_SUCCESS;
+}
+
+/**
+ * BER-TLV per ETSI TS 102 223 V17.2.0 clause.8.70.
+ * Tag per ETSI TS 101 220 V17.1.0 clause.7.2 table.7.23.
+ */
+static swicc_ret_et proactive_cmd__tlv__network_access_name(
+    swicc_dato_bertlv_enc_st *const encoder,
+    swsim__proactive__tlv__network_access_name_st const
+        *const tlv_network_access_name)
+{
+    swicc_dato_bertlv_tag_st bertlv_tag;
+    if (swicc_dato_bertlv_tag_create(&bertlv_tag, 0xC7) != SWICC_RET_SUCCESS)
+    {
+        return SWICC_RET_ERROR;
+    }
+
+    if (tlv_network_access_name->valid)
+    {
+        if (swicc_dato_bertlv_enc_data(
+                encoder,
+                (uint8_t const *const)&tlv_network_access_name
+                    ->network_access_name,
+                tlv_network_access_name->network_access_name_length) !=
+                SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_hdr(encoder, &bertlv_tag) !=
+                SWICC_RET_SUCCESS)
+        {
+            return SWICC_RET_ERROR;
+        }
+    }
+    return SWICC_RET_SUCCESS;
+}
+
+/**
+ * BER-TLV per ETSI TS 102 223 V17.2.0 clause.8.68.
+ * Tag per ETSI TS 101 220 V17.1.0 clause.7.2 table.7.23.
+ */
+static swicc_ret_et proactive_cmd__tlv__remote_entity_address(
+    swicc_dato_bertlv_enc_st *const encoder,
+    swsim__proactive__tlv__remote_entity_address_st const
+        *const tlv_remote_entity_address)
+{
+    swicc_dato_bertlv_tag_st bertlv_tag;
+    if (swicc_dato_bertlv_tag_create(&bertlv_tag, 0xC9) != SWICC_RET_SUCCESS)
+    {
+        return SWICC_RET_ERROR;
+    }
+
+    if (tlv_remote_entity_address->valid)
+    {
+        switch (tlv_remote_entity_address->coding_type)
+        {
+        case SWSIM__PROACTIVE__REMOTE_ENTITY_ADDRESS__CODING_TYPE__IEEE_802_16_2009_ADDRESS_48BIT:
+            if (swicc_dato_bertlv_enc_data(
+                    encoder, tlv_remote_entity_address->ieee_802_16_2009,
+                    sizeof(tlv_remote_entity_address->ieee_802_16_2009)) !=
+                SWICC_RET_SUCCESS)
+            {
+                return SWICC_RET_ERROR;
+            }
+            break;
+        case SWSIM__PROACTIVE__REMOTE_ENTITY_ADDRESS__CODING_TYPE__IRDA_DEVICE_ADDRESS_32BIT:
+            if (swicc_dato_bertlv_enc_data(
+                    encoder, tlv_remote_entity_address->irda,
+                    sizeof(tlv_remote_entity_address->irda)) !=
+                SWICC_RET_SUCCESS)
+            {
+                return SWICC_RET_ERROR;
+            }
+            break;
+        }
+
+        uint8_t const coding_type =
+            (uint8_t)tlv_remote_entity_address->coding_type;
+        if (swicc_dato_bertlv_enc_data(encoder, &coding_type, 1U) !=
+                SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_hdr(encoder, &bertlv_tag) !=
+                SWICC_RET_SUCCESS)
+        {
+            return SWICC_RET_ERROR;
+        }
+    }
+    return SWICC_RET_SUCCESS;
+}
+
+// remote_entity_address
+
 static swicc_ret_et proactive_cmd(
     swsim__proactive__command_st const *const command,
     uint8_t (*const command_buffer)[SWICC_DATA_MAX],
@@ -634,7 +968,7 @@ static swicc_ret_et proactive_cmd(
             break;
         case SWSIM__PROACTIVE__COMMAND_TYPE__GEOGRAPHICAL_LOCATION_REQUEST:
             break;
-        case SWSIM__PROACTIVE__COMMAND_TYPE__PLAY_TONE: {
+        case SWSIM__PROACTIVE__COMMAND_TYPE__PLAY_TONE:
             if (/* clang-format off */
                 proactive_cmd__tlv__frame_identifier(&enc_nstd, &command->play_tone.frame_identifier) != SWICC_RET_SUCCESS ||
                 proactive_cmd__tlv__text_attribute(&enc_nstd, &command->play_tone.text_attribute) != SWICC_RET_SUCCESS ||
@@ -649,7 +983,6 @@ static swicc_ret_et proactive_cmd(
             }
             ret_command_specific = SWICC_RET_SUCCESS;
             break;
-        }
         case SWSIM__PROACTIVE__COMMAND_TYPE__DISPLAY_TEXT:
             if (/* clang-format off */
                 proactive_cmd__tlv__frame_identifier(&enc_nstd, &command->display_text.frame_identifier) != SWICC_RET_SUCCESS ||
@@ -715,7 +1048,90 @@ static swicc_ret_et proactive_cmd(
         case SWSIM__PROACTIVE__COMMAND_TYPE__GET_READER_STATUS:
         case SWSIM__PROACTIVE__COMMAND_TYPE__RUN_AT_COMMAND:
         case SWSIM__PROACTIVE__COMMAND_TYPE__LANGUAGE_NOTIFICATION:
-        case SWSIM__PROACTIVE__COMMAND_TYPE__OPEN_CHANNEL:
+            break;
+        case SWSIM__PROACTIVE__COMMAND_TYPE__OPEN_CHANNEL: {
+            bool nested_failed = false;
+            switch (command->open_channel.type)
+            {
+            case SWSIM__PROACTIVE__COMMAND__OPEN_CHANNEL__TYPE__CS_BEARER:
+                if (/* clang-format off */
+                    proactive_cmd__tlv__text_string(&enc_nstd, &command->open_channel.cs_bearer.text_string_user_login) != SWICC_RET_SUCCESS ||
+                    proactive_cmd__tlv__other_address(&enc_nstd, &command->open_channel.cs_bearer.other_address_local_address) != SWICC_RET_SUCCESS ||
+                    proactive_cmd__tlv__duration(&enc_nstd, &command->open_channel.cs_bearer.duration2) != SWICC_RET_SUCCESS ||
+                    proactive_cmd__tlv__subaddress(&enc_nstd, &command->open_channel.cs_bearer.subaddress) != SWICC_RET_SUCCESS ||
+
+                    /* Conditional not enforced. */
+                    proactive_cmd__tlv__duration(&enc_nstd, &command->open_channel.cs_bearer.duration1) != SWICC_RET_SUCCESS ||
+
+                    /* Mandatory not enforced. */
+                    proactive_cmd__tlv__address(&enc_nstd, &command->open_channel.cs_bearer.address) != SWICC_RET_SUCCESS
+                    /* clang-format on */)
+                {
+                    nested_failed = true;
+                    break;
+                }
+                break;
+            case SWSIM__PROACTIVE__COMMAND__OPEN_CHANNEL__TYPE__PACKET_DATA_SERVICE_BEARER:
+                if (/* clang-format off */
+                    proactive_cmd__tlv__network_access_name(&enc_nstd, &command->open_channel.packet_data_service_bearer.network_access_name) != SWICC_RET_SUCCESS ||
+                    proactive_cmd__tlv__text_string(&enc_nstd, &command->open_channel.packet_data_service_bearer.text_string_user_login) != SWICC_RET_SUCCESS ||
+                    proactive_cmd__tlv__other_address(&enc_nstd, &command->open_channel.packet_data_service_bearer.other_address_local_address) != SWICC_RET_SUCCESS
+                    /* clang-format on */)
+                {
+                    nested_failed = true;
+                    break;
+                }
+                break;
+            case SWSIM__PROACTIVE__COMMAND__OPEN_CHANNEL__TYPE__LOCAL_BEARER:
+                if (/* clang-format off */
+                    proactive_cmd__tlv__remote_entity_address(&enc_nstd, &command->open_channel.local_bearer.remote_entity_address) != SWICC_RET_SUCCESS ||
+                    proactive_cmd__tlv__duration(&enc_nstd, &command->open_channel.local_bearer.duration2) != SWICC_RET_SUCCESS ||
+
+                    /* Conditional not enforced. */
+                    proactive_cmd__tlv__duration(&enc_nstd, &command->open_channel.local_bearer.duration1) != SWICC_RET_SUCCESS
+                    /* clang-format on */)
+                {
+                    nested_failed = true;
+                    break;
+                }
+                break;
+            case SWSIM__PROACTIVE__COMMAND__OPEN_CHANNEL__TYPE__DEFAULT_NETWORK_BEARER:
+                if (/* clang-format off */
+                    proactive_cmd__tlv__text_string(&enc_nstd, &command->open_channel.default_network_bearer.text_string_user_login) != SWICC_RET_SUCCESS ||
+                    proactive_cmd__tlv__other_address(&enc_nstd, &command->open_channel.default_network_bearer.other_address_local_address) != SWICC_RET_SUCCESS
+                    /* clang-format on */)
+                {
+                    nested_failed = true;
+                    break;
+                }
+                break;
+            }
+            if (nested_failed)
+            {
+                break;
+            }
+
+            if (/* clang-format off */
+                proactive_cmd__tlv__frame_identifier(&enc_nstd, &command->open_channel.frame_identifier) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__uicc_terminal_interface_transport_level(&enc_nstd, &command->open_channel.uicc_terminal_interface_transport_level) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__text_string(&enc_nstd, &command->open_channel.text_string_user_password) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__icon_identifier(&enc_nstd, &command->open_channel.icon_identifier) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__alpha_identifier(&enc_nstd, &command->open_channel.alpha_identifier) != SWICC_RET_SUCCESS ||
+
+                /* Conditional not enforced. */
+                proactive_cmd__tlv__text_attribute(&enc_nstd, &command->open_channel.text_attribute) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__other_address(&enc_nstd, &command->open_channel.data_destination_address) != SWICC_RET_SUCCESS ||
+
+                /* Mandatory not enforced. */
+                proactive_cmd__tlv__buffer_size(&enc_nstd, &command->open_channel.buffer_size) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__bearer_description(&enc_nstd, &command->open_channel.bearer_description) != SWICC_RET_SUCCESS
+                /* clang-format on */)
+            {
+                break;
+            }
+            ret_command_specific = SWICC_RET_SUCCESS;
+            break;
+        }
         case SWSIM__PROACTIVE__COMMAND_TYPE__CLOSE_CHANNEL:
         case SWSIM__PROACTIVE__COMMAND_TYPE__RECEIVE_DATA:
         case SWSIM__PROACTIVE__COMMAND_TYPE__SEND_DATA:
@@ -813,6 +1229,7 @@ typedef enum app_default__screen_e
     APP_DEFAULT__SCREEN__SET_UP_MENU,
     APP_DEFAULT__SCREEN__SET_UP_MENU__RUN,
     APP_DEFAULT__SCREEN__PLAY_TONE,
+    APP_DEFAULT__SCREEN__OPEN_CHANNEL,
     APP_DEFAULT__SCREEN__INVALID,
 } app_default__screen_et;
 
@@ -1012,6 +1429,11 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
                                             swsim_state->proactive.app_default
                                                 .select_screen_new =
                                                 APP_DEFAULT__SCREEN__PLAY_TONE;
+                                            break;
+                                        case 0x05:
+                                            swsim_state->proactive.app_default
+                                                .select_screen_new =
+                                                APP_DEFAULT__SCREEN__OPEN_CHANNEL;
                                             break;
                                         default:
                                             break;
@@ -1474,6 +1896,130 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
                                             break;
                                         }
                                         break;
+                                    case APP_DEFAULT__SCREEN__OPEN_CHANNEL:
+                                        switch (item_identifier)
+                                        {
+                                        case 0x01:
+                                            swsim_state->proactive.app_default
+                                                .select_screen_new =
+                                                APP_DEFAULT__SCREEN__HOME;
+                                            break;
+                                        case 0x02: {
+                                            swsim__proactive__command__open_channel_st const
+                                                command_open_channel = {
+                                                    .alpha_identifier =
+                                                        {
+                                                            .valid = false,
+                                                        },
+                                                    .icon_identifier =
+                                                        {
+                                                            .valid = false,
+                                                        },
+                                                    .bearer_description =
+                                                        {
+                                                            .valid = true,
+                                                            .bearer_type =
+                                                                SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__DEFAULT_BEARER_FOR_REQUESTED_TRANSPORT_LAYER,
+                                                            .bearer_parameter_count =
+                                                                0,
+                                                            .bearer_parameter =
+                                                                NULL,
+                                                        },
+                                                    .buffer_size =
+                                                        {
+                                                            .valid = true,
+                                                            .buffer_size = 0x0F,
+                                                        },
+                                                    .text_string_user_password =
+                                                        {
+                                                            .valid = false,
+                                                        },
+                                                    .uicc_terminal_interface_transport_level =
+                                                        {
+                                                            .valid = true,
+                                                            .transport_protocol_type =
+                                                                SWSIM__PROACTIVE__UICC_TERMINAL_INTERFACE_TRANSPORT_LEVEL__TRANSPORT_PROTOCOL_TYPE__TCP_CLIENT_MODE_REMOTE_CONNECTION,
+                                                            .port_number = 80,
+                                                        },
+                                                    .data_destination_address =
+                                                        {
+                                                            .valid = true,
+                                                            .null = false,
+                                                            .address_type =
+                                                                SWSIM__PROACTIVE__OTHER_ADDRESS__ADDRESS_TYPE__IPV4,
+                                                            .ipv4 = {127, 0, 0,
+                                                                     1},
+                                                        },
+                                                    .text_attribute =
+                                                        {
+                                                            .valid = false,
+                                                        },
+                                                    .frame_identifier =
+                                                        {
+                                                            .valid = false,
+                                                        },
+
+                                                    .type =
+                                                        SWSIM__PROACTIVE__COMMAND__OPEN_CHANNEL__TYPE__DEFAULT_NETWORK_BEARER,
+
+                                                    .default_network_bearer =
+                                                        {
+                                                            .other_address_local_address =
+                                                                {
+                                                                    .valid =
+                                                                        true,
+                                                                    .null =
+                                                                        true,
+                                                                },
+                                                            .text_string_user_login =
+                                                                {
+                                                                    .valid =
+                                                                        false,
+                                                                },
+                                                        },
+
+                                                };
+
+                                            swsim__proactive__command_st const command = {
+                                                .command_number = 0,
+                                                .command_type =
+                                                    SWSIM__PROACTIVE__COMMAND_TYPE__OPEN_CHANNEL,
+                                                .command_qualifier =
+                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__OPEN_CHANNEL_ELSE__00_IMMEDIATE_LINK_ESTABLISHMENT |
+                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__OPEN_CHANNEL_ELSE__11_AUTOMATIC_RECONNECTION |
+                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__OPEN_CHANNEL_ELSE__22_IMMEDIATE_LINK_ESTABLISHMENT_IN_BACKGROUND_MODE |
+                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__OPEN_CHANNEL_ELSE__33_NO_DNS_SERVER_ADDRESSES_REQUESTED,
+                                                .device_identities =
+                                                    {
+                                                        .valid = true,
+                                                        .destination =
+                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__TERMINAL,
+                                                        .source =
+                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
+                                                    },
+                                                .open_channel =
+                                                    command_open_channel,
+                                            };
+
+                                            swicc_ret_et const ret =
+                                                proactive_cmd(
+                                                    &command,
+                                                    &swsim_state->proactive
+                                                         .command,
+                                                    &swsim_state->proactive
+                                                         .command_length);
+                                            if (ret == SWICC_RET_SUCCESS)
+                                            {
+                                                swsim_state->proactive
+                                                    .app_default_response_wait =
+                                                    true;
+                                            }
+                                        }
+                                        break;
+                                        default:
+                                            break;
+                                        }
+                                        break;
                                     default:
                                         break;
                                     }
@@ -1557,10 +2103,11 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
             swsim_state->proactive.app_default.select_screen_last !=
                 APP_DEFAULT__SCREEN__HOME)
         {
-            uint8_t const item_count = 4;
-            static char const *const item_text[4] = {
+            uint8_t const item_count = 5;
+            static char const *const item_text[5] = {
                 "C: LAUNCH BROWSER", "C: DISPLAY TEXT", "C: SET UP MENU",
-                "C: PLAY TONE"};
+                "C: PLAY TONE",      "C: OPEN CHANNEL",
+            };
             for (uint8_t item_i = 0; item_i < item_count; ++item_i)
             {
                 item[item_i].valid = true;
@@ -1655,6 +2202,27 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
             command.set_up_menu.alpha_identifier.valid = true;
             command.set_up_menu.alpha_identifier.alpha_identifier =
                 "C: PLAY TONE";
+            command.set_up_menu.item_count = item_count;
+            command.set_up_menu.item = item;
+            command_created = true;
+        }
+        else if (swsim_state->proactive.app_default.select_screen_new ==
+                     APP_DEFAULT__SCREEN__OPEN_CHANNEL &&
+                 swsim_state->proactive.app_default.select_screen_last !=
+                     APP_DEFAULT__SCREEN__OPEN_CHANNEL)
+        {
+            uint8_t const item_count = 2;
+            static char const *const item_text[2] = {"Back", "Run"};
+            for (uint8_t item_i = 0; item_i < item_count; ++item_i)
+            {
+                item[item_i].valid = true;
+                item[item_i].item_identifier = item_i + 1;
+                item[item_i].item_text_string = item_text[item_i];
+            }
+
+            command.set_up_menu.alpha_identifier.valid = true;
+            command.set_up_menu.alpha_identifier.alpha_identifier =
+                "C: OPEN CHANNEL";
             command.set_up_menu.item_count = item_count;
             command.set_up_menu.item = item;
             command_created = true;
