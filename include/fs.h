@@ -1,6 +1,7 @@
 #pragma once
+
+#include "common.h"
 #include <stdint.h>
-#include <swicc/swicc.h>
 
 /**
  * @brief Find the number of DF and EF files present inside of a provided file.

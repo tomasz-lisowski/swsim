@@ -15,7 +15,7 @@ int32_t o3gpp_select_res(swicc_fs_st const *const fs,
     swicc_fs_file_st const *const file_selected = file;
 
     /**
-     * ETSI TS 102 221 V16.4.0 pg.86 sec.11.1.1.3 describes what BER-TLV
+     * ETSI TS 102 221 V16.4.0 clause.11.1.1.3 describes what BER-TLV
      * tags shall be included in responses to certain files. These are
      * the top-level tags that shall be present:
      * - MF:  '82', '83',       'A5', '8A', '8B'^'8C'^'AB', 'C6', '81'
@@ -25,7 +25,7 @@ int32_t o3gpp_select_res(swicc_fs_st const *const fs,
      *        '88'
      *
      * Proprietary information 'A5' tags described in ETSI TS 102 221
-     * V16.4.0 sec.11.1.1.4.6.0:
+     * V16.4.0 clause.11.1.1.4.6.0:
      * - MF:  '80',              '83', '87', '88', '89'
      * - ADF:        '81', '82', '83', '87'
      * - DF:                     '83', '87'
@@ -33,7 +33,7 @@ int32_t o3gpp_select_res(swicc_fs_st const *const fs,
      * - EF (BER-TLV):           '83', '84', '85', '86'
      *
      * PIN status template 'C6' tags described in ETSI TS 102 221
-     * V16.4.0 sec.11.1.1.4.10:
+     * V16.4.0 clause.11.1.1.4.10:
      * - '90', '95', '83'
      */
     static uint8_t const tags[] = {
@@ -61,10 +61,10 @@ int32_t o3gpp_select_res(swicc_fs_st const *const fs,
         0xA5, /* '62': Proprietary information. */
         0xC6, /* '62': PIN status template DO. */
         // 0x89, /* 'A5': Platform to platform CAT secured APDU. Absent
-        //          since 3GPP 31.101 V17.0.0 pg.19 sec.11.1.1.4.6
+        //          since 3GPP 31.101 V17.0.0 clause.11.1.1.4.6
         //          indicates this shall not be present unlike what was
         //          indicated in ETSI TS 102 221 V16.4.0
-        //          sec.11.1.1.4.6.10. */
+        //          clause.11.1.1.4.6.10. */
 
         /**
          * All security attributes are indicated by reference so these
@@ -124,7 +124,7 @@ int32_t o3gpp_select_res(swicc_fs_st const *const fs,
     uint8_t const data_app_clk_min[1U] = {
         0xFF, /* Application minimum clock frequency. 0xFF = No minimum
                  app clock frequency is indicated. According to
-                 3GPP 31.101 V17.0.0 pg.20 sec.11.1.1.4.6, a value of
+                 3GPP 31.101 V17.0.0 clause.11.1.1.4.6, a value of
                  1MHz will be assumed. */
     };
     uint32_t const data_mem_available_be = htobe32(UINT32_MAX - tree->len);
@@ -184,7 +184,7 @@ int32_t o3gpp_select_res(swicc_fs_st const *const fs,
     };
     uint8_t const data_pin_status_ps_do[] = {
         0b01110000, /**
-                     * ETSI TS 102 221 V16.4.0 sec.9.5.2.
+                     * ETSI TS 102 221 V16.4.0 clause.9.5.2.
                      * LSB>MSB
                      * PIN enabled/disabled
                      *    1b key 8 = 0 (disabled)
@@ -200,7 +200,7 @@ int32_t o3gpp_select_res(swicc_fs_st const *const fs,
     uint8_t const data_pin_status_key_ref[4U][1U] = {
         /**
          * The references are defined in ETSI TS 102 221 V16.4.0
-         * sec.9.5.1 table.9.3.
+         * clause.9.5.1 table.9.3.
          */
         {
             0x01, /* PIN Appl 1 */
