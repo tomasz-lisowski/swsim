@@ -28,6 +28,7 @@ static void print_usage(char const *const arg0)
     // clang-format off
     fprintf(stderr, "Usage: %s"
         "\n["CLR_KND("--help")" | "CLR_KND("-h")"]"
+        "\n["CLR_KND("--version")" | "CLR_KND("-v")"]"
         "\n<"CLR_KND("--ip")" "CLR_VAL("ip")" | "CLR_KND("-i")" "CLR_VAL("ip")">"
         "\n<"CLR_KND("--port")" "CLR_VAL("port")" | "CLR_KND("-p")" "CLR_VAL("port")">"
         "\n<"CLR_KND("--fs")" "CLR_VAL("path")" | "CLR_KND("-f")" "CLR_VAL("path")">"
@@ -43,10 +44,17 @@ static void print_usage(char const *const arg0)
     // clang-format on
 }
 
+static void print_version()
+{
+    fprintf(stderr, "swSIM v%u.%u.%u.\n", SEMVER_MAJOR, SEMVER_MINOR,
+            SEMVER_PATCH);
+}
+
 int32_t main(int32_t const argc, char *const argv[argc])
 {
     static struct option const options_long[] = {
         {"help", no_argument, 0, 'h'},
+        {"version", no_argument, 0, 'v'},
         {"ip", required_argument, 0, 'i'},
         {"port", required_argument, 0, 'p'},
         {"fs", required_argument, 0, 'f'},
@@ -63,7 +71,7 @@ int32_t main(int32_t const argc, char *const argv[argc])
     while (1)
     {
         int32_t opt_idx = 0;
-        ch = getopt_long(argc, argv, "hi:p:f:g:", options_long, &opt_idx);
+        ch = getopt_long(argc, argv, "hvi:p:f:g:", options_long, &opt_idx);
         if (ch == -1)
         {
             break;
@@ -73,6 +81,9 @@ int32_t main(int32_t const argc, char *const argv[argc])
         {
         case 'h':
             print_usage(argv[0U]);
+            return EXIT_SUCCESS;
+        case 'v':
+            print_version();
             return EXIT_SUCCESS;
         case 'i':
             server_ip = optarg;

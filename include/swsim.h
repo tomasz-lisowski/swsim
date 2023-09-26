@@ -1,5 +1,9 @@
 #pragma once
 
+#define SEMVER_MAJOR 0
+#define SEMVER_MINOR 0
+#define SEMVER_PATCH 1
+
 #include "milenage.h"
 #include "pin.h"
 #include "proactive.h"
