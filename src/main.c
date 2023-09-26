@@ -145,6 +145,8 @@ int32_t main(int32_t const argc, char *const argv[argc])
     if (swsim_init(&swsim_state, &swicc_state, path_fsjson_load,
                    path_swiccfs) == 0)
     {
+        swsim_state.proactive.app_default_enable = true;
+
         ret = swicc_net_client_sig_register(sig_exit_handler);
         if (ret == SWICC_RET_SUCCESS)
         {

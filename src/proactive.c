@@ -1,22 +1,8 @@
 #include "proactive.h"
+#include "swicc/common.h"
 #include "swsim.h"
 #include <stdint.h>
 #include <stdio.h>
-
-void sim_proactive_init(swsim_st *const swsim_state)
-{
-
-    memset(swsim_state->proactive.command, 0,
-           sizeof(swsim_state->proactive.command));
-    swsim_state->proactive.command_length = 0;
-    memset(swsim_state->proactive.response, 0,
-           sizeof(swsim_state->proactive.response));
-    swsim_state->proactive.response_length = 0;
-
-    swsim_state->proactive.command_count = 0;
-
-    swsim_state->proactive.app_default_response_wait = false;
-}
 
 /**
  * BER-TLV per ETSI TS 102 223 V17.2.0 clause.8.2.
@@ -880,7 +866,38 @@ static swicc_ret_et proactive_cmd__tlv__remote_entity_address(
     return SWICC_RET_SUCCESS;
 }
 
-// remote_entity_address
+/**
+ * BER-TLV per ETSI TS 102 223 V17.2.0 clause.8.4.
+ * Tag per ETSI TS 101 220 V17.1.0 clause.7.2 table.7.23.
+ */
+static swicc_ret_et proactive_cmd__tlv__capability_configuration_parameters(
+    swicc_dato_bertlv_enc_st *const encoder,
+    swsim__proactive__tlv__capability_configuration_parameters_st const
+        *const tlv_capability_configuration_parameters)
+{
+    swicc_dato_bertlv_tag_st bertlv_tag;
+    if (swicc_dato_bertlv_tag_create(&bertlv_tag, 0x87) != SWICC_RET_SUCCESS)
+    {
+        return SWICC_RET_ERROR;
+    }
+
+    if (tlv_capability_configuration_parameters->valid)
+    {
+        if (swicc_dato_bertlv_enc_data(
+                encoder,
+                tlv_capability_configuration_parameters
+                    ->capability_configuration_parameters,
+                tlv_capability_configuration_parameters
+                    ->capability_configuration_parameters_length) !=
+                SWICC_RET_SUCCESS ||
+            swicc_dato_bertlv_enc_hdr(encoder, &bertlv_tag) !=
+                SWICC_RET_SUCCESS)
+        {
+            return SWICC_RET_ERROR;
+        }
+    }
+    return SWICC_RET_SUCCESS;
+}
 
 static swicc_ret_et proactive_cmd(
     swsim__proactive__command_st const *const command,
@@ -948,7 +965,30 @@ static swicc_ret_et proactive_cmd(
         case SWSIM__PROACTIVE__COMMAND_TYPE__POLL_INTERVAL:
         case SWSIM__PROACTIVE__COMMAND_TYPE__POLLING_OFF:
         case SWSIM__PROACTIVE__COMMAND_TYPE__SET_UP_EVENT_LIST:
+            break;
         case SWSIM__PROACTIVE__COMMAND_TYPE__SET_UP_CALL:
+            if (/* clang-format off */
+                proactive_cmd__tlv__frame_identifier(&enc_nstd, &command->set_up_call.frame_identifier) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__icon_identifier(&enc_nstd, &command->set_up_call.icon_identifier__call_set_up_phase) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__alpha_identifier(&enc_nstd, &command->set_up_call.alpha_identifier__call_set_up_phase) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__icon_identifier(&enc_nstd, &command->set_up_call.icon_identifier__user_confirmation_phase) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__duration(&enc_nstd, &command->set_up_call.duration) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__subaddress(&enc_nstd, &command->set_up_call.subaddress) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__capability_configuration_parameters(&enc_nstd, &command->set_up_call.capability_configuration_parameters) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__alpha_identifier(&enc_nstd, &command->set_up_call.alpha_identifier__user_confirmation_phase) != SWICC_RET_SUCCESS ||
+
+                /* Conditional not enforced. */
+                proactive_cmd__tlv__text_attribute(&enc_nstd, &command->set_up_call.text_attribute__call_set_up_phase) != SWICC_RET_SUCCESS ||
+                proactive_cmd__tlv__text_attribute(&enc_nstd, &command->set_up_call.text_attribute__user_confirmation_phase) != SWICC_RET_SUCCESS ||
+
+                /* Mandatory not enforced. */
+                proactive_cmd__tlv__address(&enc_nstd, &command->set_up_call.address) != SWICC_RET_SUCCESS
+                /* clang-format on */)
+            {
+                break;
+            }
+            ret_command_specific = SWICC_RET_SUCCESS;
+            break;
         case SWSIM__PROACTIVE__COMMAND_TYPE__SEND_SS:
         case SWSIM__PROACTIVE__COMMAND_TYPE__SEND_USSD:
         case SWSIM__PROACTIVE__COMMAND_TYPE__SEND_SHORT_MESSAGE:
@@ -957,6 +997,7 @@ static swicc_ret_et proactive_cmd(
         case SWSIM__PROACTIVE__COMMAND_TYPE__LAUNCH_BROWSER:
             if (/* clang-format off */
                 proactive_cmd__tlv__alpha_identifier(&enc_nstd, &command->launch_browser.alpha_identifier_user_confirmation_phase) != SWICC_RET_SUCCESS ||
+
                 /* Mandatory not enforced. */
                 proactive_cmd__tlv__url(&enc_nstd, &command->launch_browser.url) != SWICC_RET_SUCCESS ||
                 proactive_cmd__tlv__browser_identity( &enc_nstd, &command->launch_browser.browser_identity) != SWICC_RET_SUCCESS
@@ -975,6 +1016,7 @@ static swicc_ret_et proactive_cmd(
                 proactive_cmd__tlv__icon_identifier(&enc_nstd, &command->play_tone.icon_identifier) != SWICC_RET_SUCCESS ||
                 proactive_cmd__tlv__duration(&enc_nstd, &command->play_tone.duration) != SWICC_RET_SUCCESS ||
                 proactive_cmd__tlv__tone(&enc_nstd, &command->play_tone.tone) != SWICC_RET_SUCCESS ||
+
                 /* Mandatory not enforced. */
                 proactive_cmd__tlv__alpha_identifier(&enc_nstd, &command->play_tone.alpha_identifier) != SWICC_RET_SUCCESS
                 /* clang-format on */)
@@ -1230,821 +1272,23 @@ typedef enum app_default__screen_e
     APP_DEFAULT__SCREEN__SET_UP_MENU__RUN,
     APP_DEFAULT__SCREEN__PLAY_TONE,
     APP_DEFAULT__SCREEN__OPEN_CHANNEL,
+    APP_DEFAULT__SCREEN__SET_UP_CALL,
     APP_DEFAULT__SCREEN__INVALID,
 } app_default__screen_et;
 
-swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
+static sim__proactive__init_ft proactive_app_default__init;
+static void proactive_app_default__init(swsim__proactive_st *const proactive)
 {
-    /* Initialize the default app in the very first step. */
-    if (swsim_state->proactive.command_count == 0)
-    {
-        swsim_state->proactive.app_default.select_screen_last =
-            APP_DEFAULT__SCREEN__NONE;
-        swsim_state->proactive.app_default.select_screen_new =
-            APP_DEFAULT__SCREEN__HOME;
-    }
+    proactive->app_default.select_screen_last = APP_DEFAULT__SCREEN__NONE;
+    proactive->app_default.select_screen_new = APP_DEFAULT__SCREEN__HOME;
+}
 
-    if (swsim_state->proactive.envelope_length > 0)
-    {
-        fprintf(stderr, "Envelope: start parsing.\n");
-        static uint8_t const root_tag[] = {
-            0xD3, /* 'D3': Menu Selection */
-        };
-        static uint32_t const root_tag_count =
-            sizeof(root_tag) / sizeof(root_tag[0U]);
-        swicc_dato_bertlv_tag_st bertlv_root_tag[root_tag_count];
-        swicc_ret_et ret_tag = SWICC_RET_ERROR;
-        for (uint8_t tag_idx = 0U; tag_idx < root_tag_count; ++tag_idx)
-        {
-            if (swicc_dato_bertlv_tag_create(&bertlv_root_tag[tag_idx],
-                                             root_tag[tag_idx]) !=
-                SWICC_RET_SUCCESS)
-            {
-                break;
-            }
-            if (tag_idx + 1U >= root_tag_count)
-            {
-                ret_tag = SWICC_RET_SUCCESS;
-            }
-        }
-
-        static uint8_t const tag[] = {
-            0x82, /* '82': Device identity */
-            0x90, /* '90': Item identifier */
-            0x95, /* '95': Help request */
-        };
-        static uint32_t const tag_count = sizeof(tag) / sizeof(tag[0U]);
-        swicc_dato_bertlv_tag_st bertlv_tag[tag_count];
-        ret_tag = SWICC_RET_ERROR;
-        for (uint8_t tag_idx = 0U; tag_idx < tag_count; ++tag_idx)
-        {
-            if (swicc_dato_bertlv_tag_create(&bertlv_tag[tag_idx],
-                                             tag[tag_idx]) != SWICC_RET_SUCCESS)
-            {
-                break;
-            }
-            if (tag_idx + 1U >= tag_count)
-            {
-                ret_tag = SWICC_RET_SUCCESS;
-            }
-        }
-
-        if (ret_tag == SWICC_RET_SUCCESS)
-        {
-            fprintf(stderr, "Envelope: tags created.\n");
-
-            swicc_dato_bertlv_dec_st tlv_decoder;
-            swicc_dato_bertlv_dec_init(&tlv_decoder,
-                                       swsim_state->proactive.envelope,
-                                       swsim_state->proactive.envelope_length);
-
-            swicc_dato_bertlv_st tlv_root;
-            swicc_dato_bertlv_dec_st tlv_decoder_root;
-
-            /**
-             * Make sure the BER-TLV object has a supported length format and
-             * valid tag class.
-             */
-            if (swicc_dato_bertlv_dec_next(&tlv_decoder) == SWICC_RET_SUCCESS &&
-                swicc_dato_bertlv_dec_cur(&tlv_decoder, &tlv_decoder_root,
-                                          &tlv_root) == SWICC_RET_SUCCESS &&
-                (tlv_root.len.form ==
-                     SWICC_DATO_BERTLV_LEN_FORM_DEFINITE_SHORT ||
-                 tlv_root.len.form ==
-                     SWICC_DATO_BERTLV_LEN_FORM_DEFINITE_LONG) &&
-                tlv_root.tag.cla == SWICC_DATO_BERTLV_TAG_CLA_PRIVATE)
-            {
-                fprintf(
-                    stderr,
-                    "Envelope: root tag has valid class and root has valid length format.\n");
-
-                for (uint32_t tag_i = 0; tag_i < root_tag_count; ++tag_i)
-                {
-                    if (bertlv_root_tag[tag_i].num == tlv_root.tag.num)
-                    {
-                        /* Found a recognized tag. */
-                        switch (tag_i)
-                        {
-                        /* Menu Selection */
-                        case 0: {
-                            fprintf(stderr, "Envelope menu selection.\n");
-                            swicc_dato_bertlv_dec_st
-                                tlv_decoder_device_identities;
-                            swicc_dato_bertlv_st tlv_device_identities;
-                            swicc_dato_bertlv_dec_st
-                                tlv_decoder_item_identifier;
-                            swicc_dato_bertlv_st tlv_item_identifier;
-                            if (swicc_dato_bertlv_dec_next(&tlv_decoder_root) ==
-                                    SWICC_RET_SUCCESS &&
-                                swicc_dato_bertlv_dec_cur(
-                                    &tlv_decoder_root,
-                                    &tlv_decoder_device_identities,
-                                    &tlv_device_identities) ==
-                                    SWICC_RET_SUCCESS &&
-                                swicc_dato_bertlv_dec_next(&tlv_decoder_root) ==
-                                    SWICC_RET_SUCCESS &&
-                                swicc_dato_bertlv_dec_cur(
-                                    &tlv_decoder_root,
-                                    &tlv_decoder_item_identifier,
-                                    &tlv_item_identifier) ==
-                                    SWICC_RET_SUCCESS &&
-                                tlv_device_identities.tag.num ==
-                                    bertlv_tag[0].num &&
-                                tlv_device_identities.tag.pc ==
-                                    bertlv_tag[0].pc &&
-                                tlv_device_identities.tag.cla ==
-                                    bertlv_tag[0].cla &&
-                                tlv_item_identifier.tag.num ==
-                                    bertlv_tag[1].num &&
-                                tlv_item_identifier.tag.pc ==
-                                    bertlv_tag[1].pc &&
-                                tlv_item_identifier.tag.cla ==
-                                    bertlv_tag[1].cla &&
-                                tlv_device_identities.len.form ==
-                                    SWICC_DATO_BERTLV_LEN_FORM_DEFINITE_SHORT &&
-                                tlv_item_identifier.len.form ==
-                                    SWICC_DATO_BERTLV_LEN_FORM_DEFINITE_SHORT)
-                            {
-                                fprintf(
-                                    stderr,
-                                    "Envelope menu selection: extracted mandatory items.\n");
-
-                                /**
-                                 * This field is optional so this decode may
-                                 * fail.
-                                 */
-                                swicc_dato_bertlv_dec_st
-                                    tlv_decoder_help_request;
-                                swicc_dato_bertlv_st tlv_help_request;
-                                if (swicc_dato_bertlv_dec_next(
-                                        &tlv_decoder_root) ==
-                                        SWICC_RET_SUCCESS &&
-                                    swicc_dato_bertlv_dec_cur(
-                                        &tlv_decoder_root,
-                                        &tlv_decoder_help_request,
-                                        &tlv_help_request) == SWICC_RET_SUCCESS)
-                                {
-                                    /**
-                                     * TODO: Verify the tag and lenght fields.
-                                     */
-                                }
-
-                                uint8_t const item_identifier =
-                                    tlv_decoder_item_identifier.buf[0];
-                                fprintf(
-                                    stderr,
-                                    "Envelope menu selection: item identifier 0x%02X.\n",
-                                    item_identifier);
-                                if (item_identifier >=
-                                    APP_DEFAULT__SCREEN__INVALID)
-                                {
-                                    swsim_state->proactive.app_default
-                                        .select_screen_new =
-                                        APP_DEFAULT__SCREEN__HOME;
-                                }
-                                else
-                                {
-                                    switch (swsim_state->proactive.app_default
-                                                .select_screen_last)
-                                    {
-                                    case APP_DEFAULT__SCREEN__HOME:
-                                        switch (item_identifier)
-                                        {
-                                        case 0x01:
-                                            swsim_state->proactive.app_default
-                                                .select_screen_new =
-                                                APP_DEFAULT__SCREEN__LAUNCH_BROWSER;
-                                            break;
-                                        case 0x02:
-                                            swsim_state->proactive.app_default
-                                                .select_screen_new =
-                                                APP_DEFAULT__SCREEN__DISPLAY_TEXT;
-                                            break;
-                                        case 0x03:
-                                            swsim_state->proactive.app_default
-                                                .select_screen_new =
-                                                APP_DEFAULT__SCREEN__SET_UP_MENU;
-                                            break;
-                                        case 0x04:
-                                            swsim_state->proactive.app_default
-                                                .select_screen_new =
-                                                APP_DEFAULT__SCREEN__PLAY_TONE;
-                                            break;
-                                        case 0x05:
-                                            swsim_state->proactive.app_default
-                                                .select_screen_new =
-                                                APP_DEFAULT__SCREEN__OPEN_CHANNEL;
-                                            break;
-                                        default:
-                                            break;
-                                        }
-                                        break;
-                                    case APP_DEFAULT__SCREEN__LAUNCH_BROWSER:
-                                        switch (item_identifier)
-                                        {
-                                        case 0x01:
-                                            swsim_state->proactive.app_default
-                                                .select_screen_new =
-                                                APP_DEFAULT__SCREEN__HOME;
-                                            break;
-                                        case 0x02: {
-                                            swsim__proactive__tlv__provisioning_file_reference_st const
-                                                provisioning_file_reference[] =
-                                                    {
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    };
-                                            swsim__proactive__command__launch_browser_st
-                                                command_launch_browser = {
-                                                    .browser_identity =
-                                                        {
-                                                            .valid = true,
-                                                            .browser_identity =
-                                                                SWSIM__PROACTIVE__BROWSER_IDENTITY__BROWSER_IDENTITY__DEFAULT_BROWSER,
-                                                        },
-                                                    .url =
-                                                        {
-                                                            .valid = true,
-                                                            .url =
-                                                                /* clang-format off */ "https://ziglang.org/" /* clang-format on */
-                                                            ,
-                                                        },
-                                                    .bearer =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .provisioning_file_reference_count =
-                                                        sizeof(
-                                                            provisioning_file_reference) /
-                                                        sizeof(
-                                                            provisioning_file_reference
-                                                                [0]),
-                                                    .provisioning_file_reference =
-                                                        (swsim__proactive__tlv__provisioning_file_reference_st const
-                                                             *)
-                                                            provisioning_file_reference,
-                                                    .text_string_gateway_proxy_identity =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .alpha_identifier_user_confirmation_phase =
-                                                        {
-                                                            .valid = true,
-                                                            .alpha_identifier =
-                                                                /* clang-format off */ "This totally isn't a confirmation prompt to open the browser..." /* clang-format on */
-                                                            ,
-                                                        },
-                                                    .icon_identifier =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .text_attribute =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .frame_identifier =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .network_access_name =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .text_string_user_login =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .text_string_user_password =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                };
-
-                                            swsim__proactive__command_st const command = {
-                                                .command_number = 0,
-                                                .command_type =
-                                                    SWSIM__PROACTIVE__COMMAND_TYPE__LAUNCH_BROWSER,
-                                                .command_qualifier =
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__LAUNCH_BROWSER__LAUNCH_BROWSER_IF_NOT_ALREADY_LAUNCHED,
-                                                .device_identities =
-                                                    {
-                                                        .valid = true,
-                                                        .destination =
-                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__TERMINAL,
-                                                        .source =
-                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
-                                                    },
-                                                .launch_browser =
-                                                    command_launch_browser,
-                                            };
-
-                                            swicc_ret_et const ret =
-                                                proactive_cmd(
-                                                    &command,
-                                                    &swsim_state->proactive
-                                                         .command,
-                                                    &swsim_state->proactive
-                                                         .command_length);
-                                            if (ret == SWICC_RET_SUCCESS)
-                                            {
-                                                swsim_state->proactive
-                                                    .app_default_response_wait =
-                                                    true;
-                                            }
-                                            break;
-                                        }
-                                        default:
-                                            break;
-                                        }
-                                        break;
-                                    case APP_DEFAULT__SCREEN__DISPLAY_TEXT:
-                                        switch (item_identifier)
-                                        {
-                                        case 0x01:
-                                            swsim_state->proactive.app_default
-                                                .select_screen_new =
-                                                APP_DEFAULT__SCREEN__HOME;
-                                            break;
-                                        case 0x02: {
-                                            /**
-                                             * Display the GSM 7bit default
-                                             * alphabet (without extensions).
-                                             */
-                                            char text[8 * 16];
-                                            for (uint8_t text_i = 0;
-                                                 text_i < sizeof(text);
-                                                 ++text_i)
-                                            {
-                                                char const ch =
-                                                    (char)((sizeof(text) -
-                                                            text_i) -
-                                                           1);
-                                                switch (ch)
-                                                {
-                                                case 0x20:
-                                                case 0x0A:
-                                                case 0x1B:
-                                                case 0x0D:
-                                                    text[text_i] = ' ';
-                                                    break;
-                                                default:
-                                                    text[text_i] = ch;
-                                                }
-                                            }
-
-                                            swsim__proactive__tlv__text_attribute__text_formatting_st const
-                                                text_formatting[1] = {{
-                                                    .start_offset = 0,
-                                                    .length = sizeof(text),
-                                                    .style =
-                                                        SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_STYLE__00_ALIGNMENT_CENTER |
-                                                        SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_STYLE__12_FONT_SIZE_LARGE |
-                                                        SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_STYLE__33_STYLE_BOLD_ON |
-                                                        SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_STYLE__44_STYLE_ITALIC_OFF |
-                                                        SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_STYLE__55_STYLE_UNDERLINED_OFF |
-                                                        SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_STYLE__66_STYLE_STRIKETHROUGH_OFF,
-                                                    .color =
-                                                        SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_COLOR__FG_BRIGHT_CYAN |
-                                                        SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_COLOR__BG_DARK_MAGENTA,
-                                                }};
-
-                                            swsim__proactive__command__display_text_st const
-                                                command_display_text = {
-                                                    .text_string =
-                                                        {
-                                                            .valid = true,
-                                                            .data_coding_scheme =
-                                                                SWSIM__PROACTIVE__TEXT_STRING__DATA_CODING_SCHEME__GSM_DEFAULT_ALPHABET_8BIT,
-                                                            .text_string = text,
-                                                        },
-                                                    .icon_identifier =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .immediate_response =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .duration =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .text_attribute =
-                                                        {
-                                                            .valid = true,
-                                                            .text_formatting_count =
-                                                                1,
-                                                            .text_formatting =
-                                                                text_formatting,
-                                                        },
-                                                    .frame_identifier =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                };
-
-                                            swsim__proactive__command_st const command = {
-                                                .command_number = 0,
-                                                .command_type =
-                                                    SWSIM__PROACTIVE__COMMAND_TYPE__DISPLAY_TEXT,
-                                                .command_qualifier =
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__DISPLAY_TEXT__00_PRIORITY_HIGH |
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__DISPLAY_TEXT__16_RFU |
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__DISPLAY_TEXT__77_WAIT_FOR_USER_TO_CLEAR_MESSAGE,
-                                                .device_identities =
-                                                    {
-                                                        .valid = true,
-                                                        .destination =
-                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__DISPLAY,
-                                                        .source =
-                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
-                                                    },
-                                                .display_text =
-                                                    command_display_text,
-                                            };
-
-                                            swicc_ret_et const ret =
-                                                proactive_cmd(
-                                                    &command,
-                                                    &swsim_state->proactive
-                                                         .command,
-                                                    &swsim_state->proactive
-                                                         .command_length);
-                                            if (ret == SWICC_RET_SUCCESS)
-                                            {
-                                                swsim_state->proactive
-                                                    .app_default_response_wait =
-                                                    true;
-                                            }
-                                        }
-                                        break;
-                                        default:
-                                            break;
-                                        }
-                                        break;
-                                    case APP_DEFAULT__SCREEN__SET_UP_MENU:
-                                        switch (item_identifier)
-                                        {
-                                        case 0x01:
-                                            swsim_state->proactive.app_default
-                                                .select_screen_new =
-                                                APP_DEFAULT__SCREEN__HOME;
-                                            break;
-                                        case 0x02: {
-                                            char const *const item_text[] = {
-                                                "oooooooo", "ooooooo ",
-                                                "oooooo  ", "ooooo   ",
-                                                "oooo    ", "ooo     ",
-                                                "oo      ", "o       ",
-                                                "        ",
-                                            };
-                                            uint8_t const item_count =
-                                                sizeof(item_text) /
-                                                sizeof(item_text[0]);
-
-                                            swsim__proactive__tlv__item_st
-                                                item[sizeof(item_text) /
-                                                     sizeof(item_text[0])];
-                                            uint8_t
-                                                items_next_action_indicator_list
-                                                    [sizeof(item) /
-                                                     sizeof(item[0])];
-                                            for (uint8_t item_i = 0;
-                                                 item_i < item_count; ++item_i)
-                                            {
-                                                item[item_i].valid = true;
-                                                item[item_i].item_identifier =
-                                                    item_i + 1;
-                                                item[item_i].item_text_string =
-                                                    item_text[item_i];
-                                                items_next_action_indicator_list
-                                                    [item_i] =
-                                                        item[item_i]
-                                                            .item_identifier;
-                                            }
-
-                                            swsim__proactive__tlv__item_next_action_indicator_st const
-                                                item_next = {
-                                                    .valid = true,
-                                                    .item_next_action_indcator_count =
-                                                        item_count,
-                                                    .item_next_action_indicator_list =
-                                                        items_next_action_indicator_list,
-                                                };
-                                            swsim__proactive__command__set_up_menu_st const
-                                                command_set_up_menu = {
-                                                    .alpha_identifier =
-                                                        {
-                                                            .valid = true,
-                                                            .alpha_identifier =
-                                                                /* clang-format off */ "swSIM Proactive Menu!"/* clang-format on */
-                                                            ,
-                                                        },
-                                                    .item_count = item_count,
-                                                    .item = item,
-                                                    .item_next_action_indicator =
-                                                        item_next,
-                                                    .icon_identifier =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .item_icon_identifier_list =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .text_attribute =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .item_text_attribute_list =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                };
-                                            swsim__proactive__command_st const command = {
-                                                .command_number = 0,
-                                                .command_type =
-                                                    SWSIM__PROACTIVE__COMMAND_TYPE__SET_UP_MENU,
-                                                .command_qualifier =
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__SET_UP_MENU__00_SELECTION_PREFERENCE_NONE |
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__SET_UP_MENU__16_RFU |
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__SET_UP_MENU__77_NO_HELP_INFORMATION_AVAILABLE,
-                                                .device_identities =
-                                                    {
-                                                        .valid = true,
-                                                        .destination =
-                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__TERMINAL,
-                                                        .source =
-                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
-                                                    },
-                                                .set_up_menu =
-                                                    command_set_up_menu,
-                                            };
-
-                                            swicc_ret_et const ret =
-                                                proactive_cmd(
-                                                    &command,
-                                                    &swsim_state->proactive
-                                                         .command,
-                                                    &swsim_state->proactive
-                                                         .command_length);
-                                            if (ret == SWICC_RET_SUCCESS)
-                                            {
-                                                swsim_state->proactive
-                                                    .app_default_response_wait =
-                                                    true;
-                                                swsim_state->proactive
-                                                    .app_default
-                                                    .select_screen_new =
-                                                    APP_DEFAULT__SCREEN__SET_UP_MENU__RUN;
-                                                swsim_state->proactive
-                                                    .app_default
-                                                    .select_screen_last =
-                                                    APP_DEFAULT__SCREEN__SET_UP_MENU__RUN;
-                                            }
-                                            break;
-                                        }
-
-                                        default:
-                                            break;
-                                        }
-                                        break;
-                                    case APP_DEFAULT__SCREEN__SET_UP_MENU__RUN:
-                                        /**
-                                         * Any selection in the custom menu
-                                         * triggered by the SET UP MENU sub-menu
-                                         * returns to the home screen.
-                                         */
-                                        swsim_state->proactive.app_default
-                                            .select_screen_new =
-                                            APP_DEFAULT__SCREEN__HOME;
-                                        break;
-                                    case APP_DEFAULT__SCREEN__PLAY_TONE:
-                                        switch (item_identifier)
-                                        {
-                                        case 0x01:
-                                            swsim_state->proactive.app_default
-                                                .select_screen_new =
-                                                APP_DEFAULT__SCREEN__HOME;
-                                            break;
-                                        case 0x02: {
-                                            swsim__proactive__command__play_tone_st const
-                                                command_play_tone = {
-                                                    .alpha_identifier =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .tone =
-                                                        {
-                                                            .valid = true,
-                                                            .tone =
-                                                                SWSIM__PROACTIVE__TONE__TONE__STANDARD_SUPERVISORY_ERROR_SPECIAL_INFORMATION,
-                                                        },
-                                                    .duration =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .icon_identifier =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .text_attribute =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .frame_identifier =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                };
-
-                                            swsim__proactive__command_st const command = {
-                                                .command_number = 0,
-                                                .command_type =
-                                                    SWSIM__PROACTIVE__COMMAND_TYPE__PLAY_TONE,
-                                                .command_qualifier =
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__PLAY_TONE__00_VIBRATE_OPTIONAL |
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__PLAY_TONE__17_RFU,
-                                                .device_identities =
-                                                    {
-                                                        .valid = true,
-                                                        .destination =
-                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__TERMINAL,
-                                                        .source =
-                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
-                                                    },
-                                                .play_tone = command_play_tone,
-                                            };
-
-                                            swicc_ret_et const ret =
-                                                proactive_cmd(
-                                                    &command,
-                                                    &swsim_state->proactive
-                                                         .command,
-                                                    &swsim_state->proactive
-                                                         .command_length);
-                                            if (ret == SWICC_RET_SUCCESS)
-                                            {
-                                                swsim_state->proactive
-                                                    .app_default_response_wait =
-                                                    true;
-                                            }
-                                        }
-                                        break;
-                                        default:
-                                            break;
-                                        }
-                                        break;
-                                    case APP_DEFAULT__SCREEN__OPEN_CHANNEL:
-                                        switch (item_identifier)
-                                        {
-                                        case 0x01:
-                                            swsim_state->proactive.app_default
-                                                .select_screen_new =
-                                                APP_DEFAULT__SCREEN__HOME;
-                                            break;
-                                        case 0x02: {
-                                            swsim__proactive__command__open_channel_st const
-                                                command_open_channel = {
-                                                    .alpha_identifier =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .icon_identifier =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .bearer_description =
-                                                        {
-                                                            .valid = true,
-                                                            .bearer_type =
-                                                                SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__DEFAULT_BEARER_FOR_REQUESTED_TRANSPORT_LAYER,
-                                                            .bearer_parameter_count =
-                                                                0,
-                                                            .bearer_parameter =
-                                                                NULL,
-                                                        },
-                                                    .buffer_size =
-                                                        {
-                                                            .valid = true,
-                                                            .buffer_size = 0x0F,
-                                                        },
-                                                    .text_string_user_password =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .uicc_terminal_interface_transport_level =
-                                                        {
-                                                            .valid = true,
-                                                            .transport_protocol_type =
-                                                                SWSIM__PROACTIVE__UICC_TERMINAL_INTERFACE_TRANSPORT_LEVEL__TRANSPORT_PROTOCOL_TYPE__TCP_CLIENT_MODE_REMOTE_CONNECTION,
-                                                            .port_number = 80,
-                                                        },
-                                                    .data_destination_address =
-                                                        {
-                                                            .valid = true,
-                                                            .null = false,
-                                                            .address_type =
-                                                                SWSIM__PROACTIVE__OTHER_ADDRESS__ADDRESS_TYPE__IPV4,
-                                                            .ipv4 = {127, 0, 0,
-                                                                     1},
-                                                        },
-                                                    .text_attribute =
-                                                        {
-                                                            .valid = false,
-                                                        },
-                                                    .frame_identifier =
-                                                        {
-                                                            .valid = false,
-                                                        },
-
-                                                    .type =
-                                                        SWSIM__PROACTIVE__COMMAND__OPEN_CHANNEL__TYPE__DEFAULT_NETWORK_BEARER,
-
-                                                    .default_network_bearer =
-                                                        {
-                                                            .other_address_local_address =
-                                                                {
-                                                                    .valid =
-                                                                        true,
-                                                                    .null =
-                                                                        true,
-                                                                },
-                                                            .text_string_user_login =
-                                                                {
-                                                                    .valid =
-                                                                        false,
-                                                                },
-                                                        },
-
-                                                };
-
-                                            swsim__proactive__command_st const command = {
-                                                .command_number = 0,
-                                                .command_type =
-                                                    SWSIM__PROACTIVE__COMMAND_TYPE__OPEN_CHANNEL,
-                                                .command_qualifier =
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__OPEN_CHANNEL_ELSE__00_IMMEDIATE_LINK_ESTABLISHMENT |
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__OPEN_CHANNEL_ELSE__11_AUTOMATIC_RECONNECTION |
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__OPEN_CHANNEL_ELSE__22_IMMEDIATE_LINK_ESTABLISHMENT_IN_BACKGROUND_MODE |
-                                                    SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__OPEN_CHANNEL_ELSE__33_NO_DNS_SERVER_ADDRESSES_REQUESTED,
-                                                .device_identities =
-                                                    {
-                                                        .valid = true,
-                                                        .destination =
-                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__TERMINAL,
-                                                        .source =
-                                                            SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
-                                                    },
-                                                .open_channel =
-                                                    command_open_channel,
-                                            };
-
-                                            swicc_ret_et const ret =
-                                                proactive_cmd(
-                                                    &command,
-                                                    &swsim_state->proactive
-                                                         .command,
-                                                    &swsim_state->proactive
-                                                         .command_length);
-                                            if (ret == SWICC_RET_SUCCESS)
-                                            {
-                                                swsim_state->proactive
-                                                    .app_default_response_wait =
-                                                    true;
-                                            }
-                                        }
-                                        break;
-                                        default:
-                                            break;
-                                        }
-                                        break;
-                                    default:
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                        default:
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * Mark as handled. It gets marked even in the event of a failure to
-         * handle the envelope data. We do this to avoid re-handling the same
-         * erroneous data and never making space for a new envelope.
-         */
-        swsim_state->proactive.envelope_length = 0;
-    }
-
+static sim__proactive__step_ft proactive_app_default__step;
+static swicc_ret_et proactive_app_default__step(
+    swsim__proactive_st *const proactive)
+{
     /* Wait until we get response before creating more commands. */
-    if (swsim_state->proactive.app_default_response_wait == false)
+    if (proactive->app_default_response_wait == false)
     {
         swsim__proactive__command__set_up_menu_st command_set_up_menu = {
             .alpha_identifier =
@@ -2098,16 +1342,16 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
          * Only re-generate a screen when the newly selected screen
          * differs from the last selected screen.
          */
-        if (swsim_state->proactive.app_default.select_screen_new ==
+        if (proactive->app_default.select_screen_new ==
                 APP_DEFAULT__SCREEN__HOME &&
-            swsim_state->proactive.app_default.select_screen_last !=
+            proactive->app_default.select_screen_last !=
                 APP_DEFAULT__SCREEN__HOME)
         {
-            uint8_t const item_count = 5;
-            static char const *const item_text[5] = {
+            static char const *const item_text[] = {
                 "C: LAUNCH BROWSER", "C: DISPLAY TEXT", "C: SET UP MENU",
-                "C: PLAY TONE",      "C: OPEN CHANNEL",
+                "C: PLAY TONE",      "C: OPEN CHANNEL", "C: SET UP CALL",
             };
+            uint8_t const item_count = sizeof(item_text) / sizeof(item_text[0]);
             for (uint8_t item_i = 0; item_i < item_count; ++item_i)
             {
                 item[item_i].valid = true;
@@ -2122,13 +1366,14 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
             command.set_up_menu.item = item;
             command_created = true;
         }
-        else if (swsim_state->proactive.app_default.select_screen_new ==
+        else if (proactive->app_default.select_screen_new ==
                      APP_DEFAULT__SCREEN__LAUNCH_BROWSER &&
-                 swsim_state->proactive.app_default.select_screen_last !=
+                 proactive->app_default.select_screen_last !=
                      APP_DEFAULT__SCREEN__LAUNCH_BROWSER)
         {
-            uint8_t const item_count = 2;
-            static char const *const item_text[2] = {"Back", "Run"};
+            static char const *const item_text[] = {"Back", "Run"};
+            uint8_t const item_count = sizeof(item_text) / sizeof(item_text[0]);
+
             for (uint8_t item_i = 0; item_i < item_count; ++item_i)
             {
                 item[item_i].valid = true;
@@ -2143,13 +1388,14 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
             command.set_up_menu.item = item;
             command_created = true;
         }
-        else if (swsim_state->proactive.app_default.select_screen_new ==
+        else if (proactive->app_default.select_screen_new ==
                      APP_DEFAULT__SCREEN__DISPLAY_TEXT &&
-                 swsim_state->proactive.app_default.select_screen_last !=
+                 proactive->app_default.select_screen_last !=
                      APP_DEFAULT__SCREEN__DISPLAY_TEXT)
         {
-            uint8_t const item_count = 2;
-            static char const *const item_text[2] = {"Back", "Run"};
+            static char const *const item_text[] = {"Back", "Run"};
+            uint8_t const item_count = sizeof(item_text) / sizeof(item_text[0]);
+
             for (uint8_t item_i = 0; item_i < item_count; ++item_i)
             {
                 item[item_i].valid = true;
@@ -2164,13 +1410,14 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
             command.set_up_menu.item = item;
             command_created = true;
         }
-        else if (swsim_state->proactive.app_default.select_screen_new ==
+        else if (proactive->app_default.select_screen_new ==
                      APP_DEFAULT__SCREEN__SET_UP_MENU &&
-                 swsim_state->proactive.app_default.select_screen_last !=
+                 proactive->app_default.select_screen_last !=
                      APP_DEFAULT__SCREEN__SET_UP_MENU)
         {
-            uint8_t const item_count = 2;
-            static char const *const item_text[2] = {"Back", "Run"};
+            static char const *const item_text[] = {"Back", "Run"};
+            uint8_t const item_count = sizeof(item_text) / sizeof(item_text[0]);
+
             for (uint8_t item_i = 0; item_i < item_count; ++item_i)
             {
                 item[item_i].valid = true;
@@ -2185,13 +1432,14 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
             command.set_up_menu.item = item;
             command_created = true;
         }
-        else if (swsim_state->proactive.app_default.select_screen_new ==
+        else if (proactive->app_default.select_screen_new ==
                      APP_DEFAULT__SCREEN__PLAY_TONE &&
-                 swsim_state->proactive.app_default.select_screen_last !=
+                 proactive->app_default.select_screen_last !=
                      APP_DEFAULT__SCREEN__PLAY_TONE)
         {
-            uint8_t const item_count = 2;
-            static char const *const item_text[2] = {"Back", "Run"};
+            static char const *const item_text[] = {"Back", "Run"};
+            uint8_t const item_count = sizeof(item_text) / sizeof(item_text[0]);
+
             for (uint8_t item_i = 0; item_i < item_count; ++item_i)
             {
                 item[item_i].valid = true;
@@ -2206,13 +1454,14 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
             command.set_up_menu.item = item;
             command_created = true;
         }
-        else if (swsim_state->proactive.app_default.select_screen_new ==
+        else if (proactive->app_default.select_screen_new ==
                      APP_DEFAULT__SCREEN__OPEN_CHANNEL &&
-                 swsim_state->proactive.app_default.select_screen_last !=
+                 proactive->app_default.select_screen_last !=
                      APP_DEFAULT__SCREEN__OPEN_CHANNEL)
         {
-            uint8_t const item_count = 2;
-            static char const *const item_text[2] = {"Back", "Run"};
+            static char const *const item_text[] = {"Back", "Run"};
+            uint8_t const item_count = sizeof(item_text) / sizeof(item_text[0]);
+
             for (uint8_t item_i = 0; item_i < item_count; ++item_i)
             {
                 item[item_i].valid = true;
@@ -2227,22 +1476,1068 @@ swicc_ret_et sim_proactive_step(swsim_st *const swsim_state)
             command.set_up_menu.item = item;
             command_created = true;
         }
+        else if (proactive->app_default.select_screen_new ==
+                     APP_DEFAULT__SCREEN__SET_UP_CALL &&
+                 proactive->app_default.select_screen_last !=
+                     APP_DEFAULT__SCREEN__SET_UP_CALL)
+        {
+            static char const *const item_text[] = {"Back", "Run", "Exploit"};
+            uint8_t const item_count = sizeof(item_text) / sizeof(item_text[0]);
+
+            for (uint8_t item_i = 0; item_i < item_count; ++item_i)
+            {
+                item[item_i].valid = true;
+                item[item_i].item_identifier = item_i + 1;
+                item[item_i].item_text_string = item_text[item_i];
+            }
+
+            command.set_up_menu.alpha_identifier.valid = true;
+            command.set_up_menu.alpha_identifier.alpha_identifier =
+                "C: SET UP CALL";
+            command.set_up_menu.item_count = item_count;
+            command.set_up_menu.item = item;
+            command_created = true;
+        }
 
         if (command_created)
         {
-            swicc_ret_et const ret =
-                proactive_cmd(&command, &swsim_state->proactive.command,
-                              &swsim_state->proactive.command_length);
+            swicc_ret_et const ret = proactive_cmd(
+                &command, &proactive->command, &proactive->command_length);
             if (ret == SWICC_RET_SUCCESS)
             {
                 // Screen has been selected.
-                swsim_state->proactive.app_default.select_screen_last =
-                    swsim_state->proactive.app_default.select_screen_new;
+                proactive->app_default.select_screen_last =
+                    proactive->app_default.select_screen_new;
 
-                swsim_state->proactive.app_default_response_wait = true;
-                swsim_state->proactive.command_count += 1;
+                proactive->app_default_response_wait = true;
+                proactive->command_count += 1;
             }
         }
     }
     return SWICC_RET_SUCCESS;
+}
+
+sim__proactive__terminal_response_ft proactive_app_default__terminal_response;
+swicc_ret_et proactive_app_default__terminal_response(
+    swsim__proactive_st *const proactive)
+{
+    proactive->app_default_response_wait = false;
+    return SWICC_RET_SUCCESS;
+}
+
+sim__proactive__envelope_ft proactive_app_default__envelope;
+swicc_ret_et proactive_app_default__envelope(
+    swsim__proactive_st *const proactive)
+{
+    fprintf(stderr, "Envelope: start parsing.\n");
+    static uint8_t const root_tag[] = {
+        0xD3, /* 'D3': Menu Selection */
+    };
+    static uint32_t const root_tag_count =
+        sizeof(root_tag) / sizeof(root_tag[0U]);
+    swicc_dato_bertlv_tag_st bertlv_root_tag[root_tag_count];
+    swicc_ret_et ret_tag = SWICC_RET_ERROR;
+    for (uint8_t tag_idx = 0U; tag_idx < root_tag_count; ++tag_idx)
+    {
+        if (swicc_dato_bertlv_tag_create(&bertlv_root_tag[tag_idx],
+                                         root_tag[tag_idx]) !=
+            SWICC_RET_SUCCESS)
+        {
+            break;
+        }
+        if (tag_idx + 1U >= root_tag_count)
+        {
+            ret_tag = SWICC_RET_SUCCESS;
+        }
+    }
+
+    static uint8_t const tag[] = {
+        0x82, /* '82': Device identity */
+        0x90, /* '90': Item identifier */
+        0x95, /* '95': Help request */
+    };
+    static uint32_t const tag_count = sizeof(tag) / sizeof(tag[0U]);
+    swicc_dato_bertlv_tag_st bertlv_tag[tag_count];
+    ret_tag = SWICC_RET_ERROR;
+    for (uint8_t tag_idx = 0U; tag_idx < tag_count; ++tag_idx)
+    {
+        if (swicc_dato_bertlv_tag_create(&bertlv_tag[tag_idx], tag[tag_idx]) !=
+            SWICC_RET_SUCCESS)
+        {
+            break;
+        }
+        if (tag_idx + 1U >= tag_count)
+        {
+            ret_tag = SWICC_RET_SUCCESS;
+        }
+    }
+
+    if (ret_tag == SWICC_RET_SUCCESS)
+    {
+        fprintf(stderr, "Envelope: tags created.\n");
+
+        swicc_dato_bertlv_dec_st tlv_decoder;
+        swicc_dato_bertlv_dec_init(&tlv_decoder, proactive->envelope,
+                                   proactive->envelope_length);
+
+        swicc_dato_bertlv_st tlv_root;
+        swicc_dato_bertlv_dec_st tlv_decoder_root;
+
+        /**
+         * Make sure the BER-TLV object has a supported length format and
+         * valid tag class.
+         */
+        if (swicc_dato_bertlv_dec_next(&tlv_decoder) == SWICC_RET_SUCCESS &&
+            swicc_dato_bertlv_dec_cur(&tlv_decoder, &tlv_decoder_root,
+                                      &tlv_root) == SWICC_RET_SUCCESS &&
+            (tlv_root.len.form == SWICC_DATO_BERTLV_LEN_FORM_DEFINITE_SHORT ||
+             tlv_root.len.form == SWICC_DATO_BERTLV_LEN_FORM_DEFINITE_LONG) &&
+            tlv_root.tag.cla == SWICC_DATO_BERTLV_TAG_CLA_PRIVATE)
+        {
+            fprintf(
+                stderr,
+                "Envelope: root tag has valid class and root has valid length format.\n");
+
+            for (uint32_t tag_i = 0; tag_i < root_tag_count; ++tag_i)
+            {
+                if (bertlv_root_tag[tag_i].num == tlv_root.tag.num)
+                {
+                    /* Found a recognized tag. */
+                    switch (tag_i)
+                    {
+                    /* Menu Selection */
+                    case 0: {
+                        fprintf(stderr, "Envelope menu selection.\n");
+                        swicc_dato_bertlv_dec_st tlv_decoder_device_identities;
+                        swicc_dato_bertlv_st tlv_device_identities;
+                        swicc_dato_bertlv_dec_st tlv_decoder_item_identifier;
+                        swicc_dato_bertlv_st tlv_item_identifier;
+                        if (swicc_dato_bertlv_dec_next(&tlv_decoder_root) ==
+                                SWICC_RET_SUCCESS &&
+                            swicc_dato_bertlv_dec_cur(
+                                &tlv_decoder_root,
+                                &tlv_decoder_device_identities,
+                                &tlv_device_identities) == SWICC_RET_SUCCESS &&
+                            swicc_dato_bertlv_dec_next(&tlv_decoder_root) ==
+                                SWICC_RET_SUCCESS &&
+                            swicc_dato_bertlv_dec_cur(
+                                &tlv_decoder_root, &tlv_decoder_item_identifier,
+                                &tlv_item_identifier) == SWICC_RET_SUCCESS &&
+                            tlv_device_identities.tag.num ==
+                                bertlv_tag[0].num &&
+                            tlv_device_identities.tag.pc == bertlv_tag[0].pc &&
+                            tlv_device_identities.tag.cla ==
+                                bertlv_tag[0].cla &&
+                            tlv_item_identifier.tag.num == bertlv_tag[1].num &&
+                            tlv_item_identifier.tag.pc == bertlv_tag[1].pc &&
+                            tlv_item_identifier.tag.cla == bertlv_tag[1].cla &&
+                            tlv_device_identities.len.form ==
+                                SWICC_DATO_BERTLV_LEN_FORM_DEFINITE_SHORT &&
+                            tlv_item_identifier.len.form ==
+                                SWICC_DATO_BERTLV_LEN_FORM_DEFINITE_SHORT)
+                        {
+                            fprintf(
+                                stderr,
+                                "Envelope menu selection: extracted mandatory items.\n");
+
+                            /**
+                             * This field is optional so this decode may
+                             * fail.
+                             */
+                            swicc_dato_bertlv_dec_st tlv_decoder_help_request;
+                            swicc_dato_bertlv_st tlv_help_request;
+                            if (swicc_dato_bertlv_dec_next(&tlv_decoder_root) ==
+                                    SWICC_RET_SUCCESS &&
+                                swicc_dato_bertlv_dec_cur(
+                                    &tlv_decoder_root,
+                                    &tlv_decoder_help_request,
+                                    &tlv_help_request) == SWICC_RET_SUCCESS)
+                            {
+                                /**
+                                 * TODO: Verify the tag and lenght fields.
+                                 */
+                            }
+
+                            uint8_t const item_identifier =
+                                tlv_decoder_item_identifier.buf[0];
+                            fprintf(
+                                stderr,
+                                "Envelope menu selection: item identifier 0x%02X.\n",
+                                item_identifier);
+                            if (item_identifier >= APP_DEFAULT__SCREEN__INVALID)
+                            {
+                                proactive->app_default.select_screen_new =
+                                    APP_DEFAULT__SCREEN__HOME;
+                            }
+                            else
+                            {
+                                switch (
+                                    proactive->app_default.select_screen_last)
+                                {
+                                case APP_DEFAULT__SCREEN__HOME:
+                                    switch (item_identifier)
+                                    {
+                                    case 0x01:
+                                        proactive->app_default
+                                            .select_screen_new =
+                                            APP_DEFAULT__SCREEN__LAUNCH_BROWSER;
+                                        break;
+                                    case 0x02:
+                                        proactive->app_default
+                                            .select_screen_new =
+                                            APP_DEFAULT__SCREEN__DISPLAY_TEXT;
+                                        break;
+                                    case 0x03:
+                                        proactive->app_default
+                                            .select_screen_new =
+                                            APP_DEFAULT__SCREEN__SET_UP_MENU;
+                                        break;
+                                    case 0x04:
+                                        proactive->app_default
+                                            .select_screen_new =
+                                            APP_DEFAULT__SCREEN__PLAY_TONE;
+                                        break;
+                                    case 0x05:
+                                        proactive->app_default
+                                            .select_screen_new =
+                                            APP_DEFAULT__SCREEN__OPEN_CHANNEL;
+                                        break;
+                                    case 0x06:
+                                        proactive->app_default
+                                            .select_screen_new =
+                                            APP_DEFAULT__SCREEN__SET_UP_CALL;
+                                        break;
+                                    default:
+                                        break;
+                                    }
+                                    break;
+                                case APP_DEFAULT__SCREEN__LAUNCH_BROWSER:
+                                    switch (item_identifier)
+                                    {
+                                    case 0x01:
+                                        proactive->app_default
+                                            .select_screen_new =
+                                            APP_DEFAULT__SCREEN__HOME;
+                                        break;
+                                    case 0x02: {
+                                        swsim__proactive__tlv__provisioning_file_reference_st const
+                                            provisioning_file_reference[] = {
+                                                {
+                                                    .valid = false,
+                                                },
+                                            };
+                                        swsim__proactive__command__launch_browser_st
+                                            command_launch_browser = {
+                                                .browser_identity =
+                                                    {
+                                                        .valid = true,
+                                                        .browser_identity =
+                                                            SWSIM__PROACTIVE__BROWSER_IDENTITY__BROWSER_IDENTITY__DEFAULT_BROWSER,
+                                                    },
+                                                .url =
+                                                    {
+                                                        .valid = true,
+                                                        .url =
+                                                            /* clang-format off */ "https://ziglang.org/" /* clang-format on */
+                                                        ,
+                                                    },
+                                                .bearer =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .provisioning_file_reference_count =
+                                                    sizeof(
+                                                        provisioning_file_reference) /
+                                                    sizeof(
+                                                        provisioning_file_reference
+                                                            [0]),
+                                                .provisioning_file_reference =
+                                                    (swsim__proactive__tlv__provisioning_file_reference_st const
+                                                         *)
+                                                        provisioning_file_reference,
+                                                .text_string_gateway_proxy_identity =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .alpha_identifier_user_confirmation_phase =
+                                                    {
+                                                        .valid = true,
+                                                        .alpha_identifier =
+                                                            /* clang-format off */ "This totally isn't a confirmation prompt to open the browser..." /* clang-format on */
+                                                        ,
+                                                    },
+                                                .icon_identifier =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .text_attribute =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .frame_identifier =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .network_access_name =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .text_string_user_login =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .text_string_user_password =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                            };
+
+                                        swsim__proactive__command_st const command = {
+                                            .command_number = 0,
+                                            .command_type =
+                                                SWSIM__PROACTIVE__COMMAND_TYPE__LAUNCH_BROWSER,
+                                            .command_qualifier =
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__LAUNCH_BROWSER__LAUNCH_BROWSER_IF_NOT_ALREADY_LAUNCHED,
+                                            .device_identities =
+                                                {
+                                                    .valid = true,
+                                                    .destination =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__TERMINAL,
+                                                    .source =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
+                                                },
+                                            .launch_browser =
+                                                command_launch_browser,
+                                        };
+
+                                        swicc_ret_et const ret = proactive_cmd(
+                                            &command, &proactive->command,
+                                            &proactive->command_length);
+                                        if (ret == SWICC_RET_SUCCESS)
+                                        {
+                                            proactive
+                                                ->app_default_response_wait =
+                                                true;
+                                        }
+                                        break;
+                                    }
+                                    default:
+                                        break;
+                                    }
+                                    break;
+                                case APP_DEFAULT__SCREEN__DISPLAY_TEXT:
+                                    switch (item_identifier)
+                                    {
+                                    case 0x01:
+                                        proactive->app_default
+                                            .select_screen_new =
+                                            APP_DEFAULT__SCREEN__HOME;
+                                        break;
+                                    case 0x02: {
+                                        /**
+                                         * Display the GSM 7bit default alphabet
+                                         * (without extensions).
+                                         */
+                                        char text[8 * 16];
+                                        for (uint8_t text_i = 0;
+                                             text_i < sizeof(text); ++text_i)
+                                        {
+                                            char const ch =
+                                                (char)((sizeof(text) - text_i) -
+                                                       1);
+                                            switch (ch)
+                                            {
+                                            case 0x20:
+                                            case 0x0A:
+                                            case 0x1B:
+                                            case 0x0D:
+                                                text[text_i] = ' ';
+                                                break;
+                                            default:
+                                                text[text_i] = ch;
+                                            }
+                                        }
+
+                                        swsim__proactive__tlv__text_attribute__text_formatting_st const
+                                            text_formatting[1] = {{
+                                                .start_offset = 0,
+                                                .length = sizeof(text),
+                                                .style =
+                                                    SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_STYLE__00_ALIGNMENT_CENTER |
+                                                    SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_STYLE__12_FONT_SIZE_LARGE |
+                                                    SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_STYLE__33_STYLE_BOLD_ON |
+                                                    SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_STYLE__44_STYLE_ITALIC_OFF |
+                                                    SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_STYLE__55_STYLE_UNDERLINED_OFF |
+                                                    SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_STYLE__66_STYLE_STRIKETHROUGH_OFF,
+                                                .color =
+                                                    SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_COLOR__FG_BRIGHT_CYAN |
+                                                    SWSIM__PROACTIVE__TEXT_ATTRIBUTE__FORMATTING_COLOR__BG_DARK_MAGENTA,
+                                            }};
+
+                                        swsim__proactive__command__display_text_st const
+                                            command_display_text = {
+                                                .text_string =
+                                                    {
+                                                        .valid = true,
+                                                        .data_coding_scheme =
+                                                            SWSIM__PROACTIVE__TEXT_STRING__DATA_CODING_SCHEME__GSM_DEFAULT_ALPHABET_8BIT,
+                                                        .text_string = text,
+                                                    },
+                                                .icon_identifier =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .immediate_response =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .duration =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .text_attribute =
+                                                    {
+                                                        .valid = true,
+                                                        .text_formatting_count =
+                                                            1,
+                                                        .text_formatting =
+                                                            text_formatting,
+                                                    },
+                                                .frame_identifier =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                            };
+
+                                        swsim__proactive__command_st const command = {
+                                            .command_number = 0,
+                                            .command_type =
+                                                SWSIM__PROACTIVE__COMMAND_TYPE__DISPLAY_TEXT,
+                                            .command_qualifier =
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__DISPLAY_TEXT__00_PRIORITY_HIGH |
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__DISPLAY_TEXT__16_RFU |
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__DISPLAY_TEXT__77_WAIT_FOR_USER_TO_CLEAR_MESSAGE,
+                                            .device_identities =
+                                                {
+                                                    .valid = true,
+                                                    .destination =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__DISPLAY,
+                                                    .source =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
+                                                },
+                                            .display_text =
+                                                command_display_text,
+                                        };
+
+                                        swicc_ret_et const ret = proactive_cmd(
+                                            &command, &proactive->command,
+                                            &proactive->command_length);
+                                        if (ret == SWICC_RET_SUCCESS)
+                                        {
+                                            proactive
+                                                ->app_default_response_wait =
+                                                true;
+                                        }
+                                    }
+                                    break;
+                                    default:
+                                        break;
+                                    }
+                                    break;
+                                case APP_DEFAULT__SCREEN__SET_UP_MENU:
+                                    switch (item_identifier)
+                                    {
+                                    case 0x01:
+                                        proactive->app_default
+                                            .select_screen_new =
+                                            APP_DEFAULT__SCREEN__HOME;
+                                        break;
+                                    case 0x02: {
+                                        char const *const item_text[] = {
+                                            "oooooooo", "ooooooo ", "oooooo  ",
+                                            "ooooo   ", "oooo    ", "ooo     ",
+                                            "oo      ", "o       ", "        ",
+                                        };
+                                        uint8_t const item_count =
+                                            sizeof(item_text) /
+                                            sizeof(item_text[0]);
+
+                                        swsim__proactive__tlv__item_st
+                                            item[sizeof(item_text) /
+                                                 sizeof(item_text[0])];
+                                        uint8_t items_next_action_indicator_list
+                                            [sizeof(item) / sizeof(item[0])];
+                                        for (uint8_t item_i = 0;
+                                             item_i < item_count; ++item_i)
+                                        {
+                                            item[item_i].valid = true;
+                                            item[item_i].item_identifier =
+                                                item_i + 1;
+                                            item[item_i].item_text_string =
+                                                item_text[item_i];
+                                            items_next_action_indicator_list
+                                                [item_i] = item[item_i]
+                                                               .item_identifier;
+                                        }
+
+                                        swsim__proactive__tlv__item_next_action_indicator_st const
+                                            item_next = {
+                                                .valid = true,
+                                                .item_next_action_indcator_count =
+                                                    item_count,
+                                                .item_next_action_indicator_list =
+                                                    items_next_action_indicator_list,
+                                            };
+                                        swsim__proactive__command__set_up_menu_st const
+                                            command_set_up_menu = {
+                                                .alpha_identifier =
+                                                    {
+                                                        .valid = true,
+                                                        .alpha_identifier =
+                                                            /* clang-format off */ "swSIM Proactive Menu!"/* clang-format on */
+                                                        ,
+                                                    },
+                                                .item_count = item_count,
+                                                .item = item,
+                                                .item_next_action_indicator =
+                                                    item_next,
+                                                .icon_identifier =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .item_icon_identifier_list =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .text_attribute =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .item_text_attribute_list =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                            };
+                                        swsim__proactive__command_st const command = {
+                                            .command_number = 0,
+                                            .command_type =
+                                                SWSIM__PROACTIVE__COMMAND_TYPE__SET_UP_MENU,
+                                            .command_qualifier =
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__SET_UP_MENU__00_SELECTION_PREFERENCE_NONE |
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__SET_UP_MENU__16_RFU |
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__SET_UP_MENU__77_NO_HELP_INFORMATION_AVAILABLE,
+                                            .device_identities =
+                                                {
+                                                    .valid = true,
+                                                    .destination =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__TERMINAL,
+                                                    .source =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
+                                                },
+                                            .set_up_menu = command_set_up_menu,
+                                        };
+
+                                        swicc_ret_et const ret = proactive_cmd(
+                                            &command, &proactive->command,
+                                            &proactive->command_length);
+                                        if (ret == SWICC_RET_SUCCESS)
+                                        {
+                                            proactive
+                                                ->app_default_response_wait =
+                                                true;
+
+                                            proactive->app_default
+                                                .select_screen_new =
+                                                APP_DEFAULT__SCREEN__SET_UP_MENU__RUN;
+                                            proactive->app_default
+                                                .select_screen_last =
+                                                APP_DEFAULT__SCREEN__SET_UP_MENU__RUN;
+                                        }
+                                        break;
+                                    }
+
+                                    default:
+                                        break;
+                                    }
+                                    break;
+                                case APP_DEFAULT__SCREEN__SET_UP_MENU__RUN:
+                                    /**
+                                     * Any selection in the custom menu
+                                     * triggered by the SET UP MENU sub-menu
+                                     * returns to the home screen.
+                                     */
+                                    proactive->app_default.select_screen_new =
+                                        APP_DEFAULT__SCREEN__HOME;
+                                    break;
+                                case APP_DEFAULT__SCREEN__PLAY_TONE:
+                                    switch (item_identifier)
+                                    {
+                                    case 0x01:
+                                        proactive->app_default
+                                            .select_screen_new =
+                                            APP_DEFAULT__SCREEN__HOME;
+                                        break;
+                                    case 0x02: {
+                                        swsim__proactive__command__play_tone_st const
+                                            command_play_tone = {
+                                                .alpha_identifier =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .tone =
+                                                    {
+                                                        .valid = true,
+                                                        .tone =
+                                                            SWSIM__PROACTIVE__TONE__TONE__STANDARD_SUPERVISORY_ERROR_SPECIAL_INFORMATION,
+                                                    },
+                                                .duration =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .icon_identifier =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .text_attribute =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .frame_identifier =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                            };
+
+                                        swsim__proactive__command_st const command = {
+                                            .command_number = 0,
+                                            .command_type =
+                                                SWSIM__PROACTIVE__COMMAND_TYPE__PLAY_TONE,
+                                            .command_qualifier =
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__PLAY_TONE__00_VIBRATE_OPTIONAL |
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__PLAY_TONE__17_RFU,
+                                            .device_identities =
+                                                {
+                                                    .valid = true,
+                                                    .destination =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__TERMINAL,
+                                                    .source =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
+                                                },
+                                            .play_tone = command_play_tone,
+                                        };
+
+                                        swicc_ret_et const ret = proactive_cmd(
+                                            &command, &proactive->command,
+                                            &proactive->command_length);
+                                        if (ret == SWICC_RET_SUCCESS)
+                                        {
+                                            proactive
+                                                ->app_default_response_wait =
+                                                true;
+                                        }
+                                    }
+                                    break;
+                                    default:
+                                        break;
+                                    }
+                                    break;
+                                case APP_DEFAULT__SCREEN__OPEN_CHANNEL:
+                                    switch (item_identifier)
+                                    {
+                                    case 0x01:
+                                        proactive->app_default
+                                            .select_screen_new =
+                                            APP_DEFAULT__SCREEN__HOME;
+                                        break;
+                                    case 0x02: {
+                                        swsim__proactive__command__open_channel_st const
+                                            command_open_channel = {
+                                                .alpha_identifier =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .icon_identifier =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .bearer_description =
+                                                    {
+                                                        .valid = true,
+                                                        .bearer_type =
+                                                            SWSIM__PROACTIVE__BEARER_DESCRIPTION__BEARER_TYPE__DEFAULT_BEARER_FOR_REQUESTED_TRANSPORT_LAYER,
+                                                        .bearer_parameter_count =
+                                                            0,
+                                                        .bearer_parameter =
+                                                            NULL,
+                                                    },
+                                                .buffer_size =
+                                                    {
+                                                        .valid = true,
+                                                        .buffer_size = 0x0F,
+                                                    },
+                                                .text_string_user_password =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .uicc_terminal_interface_transport_level =
+                                                    {
+                                                        .valid = true,
+                                                        .transport_protocol_type =
+                                                            SWSIM__PROACTIVE__UICC_TERMINAL_INTERFACE_TRANSPORT_LEVEL__TRANSPORT_PROTOCOL_TYPE__TCP_CLIENT_MODE_REMOTE_CONNECTION,
+                                                        .port_number = 80,
+                                                    },
+                                                .data_destination_address =
+                                                    {
+                                                        .valid = true,
+                                                        .null = false,
+                                                        .address_type =
+                                                            SWSIM__PROACTIVE__OTHER_ADDRESS__ADDRESS_TYPE__IPV4,
+                                                        .ipv4 = {127, 0, 0, 1},
+                                                    },
+                                                .text_attribute =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .frame_identifier =
+                                                    {
+                                                        .valid = false,
+                                                    },
+
+                                                .type =
+                                                    SWSIM__PROACTIVE__COMMAND__OPEN_CHANNEL__TYPE__DEFAULT_NETWORK_BEARER,
+
+                                                .default_network_bearer =
+                                                    {
+                                                        .other_address_local_address =
+                                                            {
+                                                                .valid = true,
+                                                                .null = true,
+                                                            },
+                                                        .text_string_user_login =
+                                                            {
+                                                                .valid = false,
+                                                            },
+                                                    },
+
+                                            };
+
+                                        swsim__proactive__command_st const command = {
+                                            .command_number = 0,
+                                            .command_type =
+                                                SWSIM__PROACTIVE__COMMAND_TYPE__OPEN_CHANNEL,
+                                            .command_qualifier =
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__OPEN_CHANNEL_ELSE__00_IMMEDIATE_LINK_ESTABLISHMENT |
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__OPEN_CHANNEL_ELSE__11_AUTOMATIC_RECONNECTION |
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__OPEN_CHANNEL_ELSE__22_IMMEDIATE_LINK_ESTABLISHMENT_IN_BACKGROUND_MODE |
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__OPEN_CHANNEL_ELSE__33_NO_DNS_SERVER_ADDRESSES_REQUESTED,
+                                            .device_identities =
+                                                {
+                                                    .valid = true,
+                                                    .destination =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__TERMINAL,
+                                                    .source =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
+                                                },
+                                            .open_channel =
+                                                command_open_channel,
+                                        };
+
+                                        swicc_ret_et const ret = proactive_cmd(
+                                            &command, &proactive->command,
+                                            &proactive->command_length);
+                                        if (ret == SWICC_RET_SUCCESS)
+                                        {
+                                            proactive
+                                                ->app_default_response_wait =
+                                                true;
+                                        }
+                                    }
+                                    break;
+                                    default:
+                                        break;
+                                    }
+                                    break;
+                                case APP_DEFAULT__SCREEN__SET_UP_CALL:
+                                    switch (item_identifier)
+                                    {
+                                    case 0x01:
+                                        proactive->app_default
+                                            .select_screen_new =
+                                            APP_DEFAULT__SCREEN__HOME;
+                                        break;
+                                    case 0x02: {
+                                        uint8_t const dialing_number[] = {0, 0,
+                                                                          0};
+                                        uint8_t const dialing_number_length =
+                                            sizeof(dialing_number) /
+                                            sizeof(dialing_number[0]);
+                                        swsim__proactive__command__set_up_call_st const
+                                            command_set_up_call = {
+                                                .alpha_identifier__user_confirmation_phase =
+                                                    {
+                                                        .valid = true,
+                                                    },
+                                                .address =
+                                                    {
+                                                        .valid = true,
+                                                        .type_of_number =
+                                                            SWSIM__PROACTIVE__ADDRESS__TYPE_OF_NUMBER__UNKNOWN,
+                                                        .numbering_plan_identification =
+                                                            SWSIM__PROACTIVE__ADDRESS__NUMBERING_PLAN_IDENTIFICATION__UNKNOWN,
+                                                        .dialing_number =
+                                                            dialing_number,
+                                                        .dialing_number_length =
+                                                            dialing_number_length,
+                                                    },
+                                                .capability_configuration_parameters =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .subaddress =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .duration =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .icon_identifier__user_confirmation_phase =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .alpha_identifier__call_set_up_phase =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .icon_identifier__call_set_up_phase =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .text_attribute__user_confirmation_phase =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .text_attribute__call_set_up_phase =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                                .frame_identifier =
+                                                    {
+                                                        .valid = false,
+                                                    },
+                                            };
+
+                                        swsim__proactive__command_st const command = {
+                                            .command_number = 0,
+                                            .command_type =
+                                                SWSIM__PROACTIVE__COMMAND_TYPE__SET_UP_CALL,
+                                            .command_qualifier =
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__SET_UP_CALL__DISCONNECTING_ALL_OTHER_CALLS,
+                                            .device_identities =
+                                                {
+                                                    .valid = true,
+                                                    .destination =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__NETWORK,
+                                                    .source =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
+                                                },
+                                            .set_up_call = command_set_up_call,
+                                        };
+
+                                        swicc_ret_et const ret = proactive_cmd(
+                                            &command, &proactive->command,
+                                            &proactive->command_length);
+                                        if (ret == SWICC_RET_SUCCESS)
+                                        {
+                                            proactive
+                                                ->app_default_response_wait =
+                                                true;
+                                        }
+                                        break;
+                                    }
+                                    case 0x03: {
+                                        uint8_t const dialing_number[] = {0, 0,
+                                                                          0};
+                                        uint8_t const dialing_number_length =
+                                            sizeof(dialing_number) /
+                                            sizeof(dialing_number[0]);
+                                        uint8_t const
+                                            capability_configuration_parameters
+                                                [] = {0};
+                                        uint8_t const
+                                            capability_configuration_parameters_length =
+                                                sizeof(
+                                                    capability_configuration_parameters) /
+                                                sizeof(
+                                                    capability_configuration_parameters
+                                                        [0]);
+                                        swsim__proactive__command__set_up_call_st const command_set_up_call = {
+                                            .alpha_identifier__user_confirmation_phase =
+                                                {
+                                                    .valid = true,
+                                                    .alpha_identifier =
+                                                        "Welcome to ULPNet!",
+                                                },
+                                            .address =
+                                                {
+                                                    .valid = true,
+                                                    .type_of_number =
+                                                        SWSIM__PROACTIVE__ADDRESS__TYPE_OF_NUMBER__UNKNOWN,
+                                                    .numbering_plan_identification =
+                                                        SWSIM__PROACTIVE__ADDRESS__NUMBERING_PLAN_IDENTIFICATION__UNKNOWN,
+                                                    .dialing_number =
+                                                        dialing_number,
+                                                    .dialing_number_length =
+                                                        dialing_number_length,
+                                                },
+                                            .capability_configuration_parameters =
+                                                {
+                                                    .valid = true,
+                                                    .capability_configuration_parameters_length =
+                                                        capability_configuration_parameters_length,
+                                                    .capability_configuration_parameters =
+                                                        capability_configuration_parameters,
+                                                },
+                                            .subaddress =
+                                                {
+                                                    .valid = false,
+                                                },
+                                            .duration =
+                                                {
+                                                    .valid = false,
+                                                },
+                                            .icon_identifier__user_confirmation_phase =
+                                                {
+                                                    .valid = false,
+                                                },
+                                            .alpha_identifier__call_set_up_phase =
+                                                {
+                                                    .valid = true,
+                                                    .alpha_identifier =
+                                                        "Testing",
+                                                },
+                                            .icon_identifier__call_set_up_phase =
+                                                {
+                                                    .valid = false,
+                                                },
+                                            .text_attribute__user_confirmation_phase =
+                                                {
+                                                    .valid = false,
+                                                },
+                                            .text_attribute__call_set_up_phase =
+                                                {
+                                                    .valid = false,
+                                                },
+                                            .frame_identifier =
+                                                {
+                                                    .valid = false,
+                                                },
+                                        };
+
+                                        swsim__proactive__command_st const command = {
+                                            .command_number = 0,
+                                            .command_type =
+                                                SWSIM__PROACTIVE__COMMAND_TYPE__SET_UP_CALL,
+                                            .command_qualifier =
+                                                SWSIM__PROACTIVE__COMMAND_DETAILS__COMMAND_QUALIFIER__SET_UP_CALL__DISCONNECTING_ALL_OTHER_CALLS,
+                                            .device_identities =
+                                                {
+                                                    .valid = true,
+                                                    .destination =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__NETWORK,
+                                                    .source =
+                                                        SWSIM__PROACTIVE__DEVICE_IDENTITIES__UICC,
+                                                },
+                                            .set_up_call = command_set_up_call,
+                                        };
+
+                                        swicc_ret_et const ret = proactive_cmd(
+                                            &command, &proactive->command,
+                                            &proactive->command_length);
+                                        if (ret == SWICC_RET_SUCCESS)
+                                        {
+                                            proactive
+                                                ->app_default_response_wait =
+                                                true;
+                                        }
+                                        break;
+                                    }
+                                    default:
+                                        break;
+                                    }
+                                    break;
+                                default:
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Mark as handled. It gets marked even in the event of a failure to handle
+     * the envelope data. We do this to avoid re-handling the same erroneous
+     * data and never making space for a new envelope.
+     */
+    proactive->envelope_length = 0;
+
+    return SWICC_RET_SUCCESS;
+}
+
+void proactive_init(swsim__proactive_st *const proactive)
+{
+    memset(proactive->command, 0, sizeof(proactive->command));
+    proactive->command_length = 0;
+    memset(proactive->response, 0, sizeof(proactive->response));
+    proactive->response_length = 0;
+
+    proactive->command_count = 0;
+
+    proactive->app_default_enable = false;
+    proactive->app_default_response_wait = false;
+
+    proactive->app_proprietary_enable = false;
+    proactive->app_proprietary_response_wait = false;
+    proactive->app_proprietary = NULL;
+    proactive->app_proprietary__step = NULL;
+    proactive->app_proprietary__init = NULL;
+}
+
+swicc_ret_et proactive_step(swsim__proactive_st *const proactive)
+{
+    /* Initialize the default app in the very first step. */
+    if (proactive->command_count == 0)
+    {
+        if (proactive->app_default_enable)
+        {
+            proactive_app_default__init(proactive);
+        }
+        else if (proactive->app_proprietary_enable &&
+                 proactive->app_proprietary__init != NULL)
+        {
+            proactive->app_proprietary__init(proactive);
+        }
+    }
+
+    if (proactive->app_default_enable)
+    {
+        return proactive_app_default__step(proactive);
+    }
+    else if (proactive->app_proprietary_enable &&
+             proactive->app_proprietary__step != NULL)
+    {
+        return proactive->app_proprietary__step(proactive);
+    }
+    else
+    {
+        /* When no app runs, this function is just a nop. */
+        return SWICC_RET_SUCCESS;
+    }
 }

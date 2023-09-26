@@ -64,7 +64,7 @@ int32_t swsim_init(swsim_st *const swsim_state, swicc_st *const swicc_state,
                 if (swicc_apduh_pro_register(swicc_state, sim_apduh_demux) ==
                     SWICC_RET_SUCCESS)
                 {
-                    sim_proactive_init(swicc_state->userdata);
+                    proactive_init(swicc_state->userdata);
                     return 0;
                 }
                 else

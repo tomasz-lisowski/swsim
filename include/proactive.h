@@ -840,6 +840,14 @@ typedef struct swsim__proactive__tlv__remote_entity_address_s
     };
 } swsim__proactive__tlv__remote_entity_address_st;
 
+/* ETSI TS 102 223 V17.2.0 clause.8.4. */
+typedef struct swsim__proactive__tlv__capability_configuration_parameters_s
+{
+    bool valid;
+    uint8_t capability_configuration_parameters_length;
+    uint8_t const *capability_configuration_parameters;
+} swsim__proactive__tlv__capability_configuration_parameters_st;
+
 /* ETSI TS 102 223 V17.2.0 clause.6.6.1. */
 typedef struct swsim__proactive__command__display_text_s
 {
@@ -950,6 +958,26 @@ typedef struct swsim__proactive__command__open_channel_s
     };
 } swsim__proactive__command__open_channel_st;
 
+/* ETSI TS 102 223 V17.2.0 clause.6.6.12. */
+typedef struct swsim__proactive__command__set_up_call_s
+{
+    /* clang-format off */
+    swsim__proactive__tlv__alpha_identifier_st alpha_identifier__user_confirmation_phase;
+    swsim__proactive__tlv__address_st address;
+    /* NOTE: If caps config params are missing, speech call is assumed. */
+    swsim__proactive__tlv__capability_configuration_parameters_st capability_configuration_parameters;
+    swsim__proactive__tlv__subaddress_st subaddress;
+    /* NOTE: If duration is missing, UICC imposes no restrictions on the terminal of the maximum duration of redials. */
+    swsim__proactive__tlv__duration_st duration;
+    swsim__proactive__tlv__icon_identifier_st icon_identifier__user_confirmation_phase;
+    swsim__proactive__tlv__alpha_identifier_st alpha_identifier__call_set_up_phase;
+    swsim__proactive__tlv__icon_identifier_st icon_identifier__call_set_up_phase;
+    swsim__proactive__tlv__text_attribute_st text_attribute__user_confirmation_phase;
+    swsim__proactive__tlv__text_attribute_st text_attribute__call_set_up_phase;
+    swsim__proactive__tlv__frame_identifier_st frame_identifier;
+    /* clang-format on */
+} swsim__proactive__command__set_up_call_st;
+
 typedef struct swsim__proactive__command_s
 {
     /**
@@ -968,10 +996,19 @@ typedef struct swsim__proactive__command_s
         swsim__proactive__command__launch_browser_st launch_browser;
         swsim__proactive__command__play_tone_st play_tone;
         swsim__proactive__command__open_channel_st open_channel;
+        swsim__proactive__command__set_up_call_st set_up_call;
     };
 } swsim__proactive__command_st;
 
-typedef swicc_ret_et sim_proactive_step_ft(swsim_st *const swsim_state);
+typedef struct swsim__proactive_s swsim__proactive_st;
+typedef swicc_ret_et sim__proactive__step_ft(
+    swsim__proactive_st *const proactive);
+typedef void sim__proactive__init_ft(swsim__proactive_st *const proactive);
+typedef swicc_ret_et sim__proactive__envelope_ft(
+    swsim__proactive_st *const proactive);
+typedef swicc_ret_et sim__proactive__terminal_response_ft(
+    swsim__proactive_st *const proactive);
+
 typedef struct swsim__proactive_s
 {
     uint32_t command_count;
@@ -983,14 +1020,24 @@ typedef struct swsim__proactive_s
     uint8_t envelope[SWICC_DATA_MAX];
     uint16_t envelope_length;
 
+    bool app_default_enable;
     bool app_default_response_wait;
     struct
     {
         uint8_t select_screen_last;
         uint8_t select_screen_new;
     } app_default;
+
+    bool app_proprietary_enable;
+    bool app_proprietary_response_wait;
+    void *app_proprietary;
+    sim__proactive__init_ft *app_proprietary__init;
+    sim__proactive__envelope_ft *app_proprietary__envelope;
+    sim__proactive__step_ft *app_proprietary__step;
+    sim__proactive__terminal_response_ft *app_proprietary__terminal_response;
 } swsim__proactive_st;
 
-void sim_proactive_init(swsim_st *const swicc_state);
-
-sim_proactive_step_ft sim_proactive_step;
+sim__proactive__init_ft proactive_init;
+sim__proactive__envelope_ft proactive_app_default__envelope;
+sim__proactive__step_ft proactive_step;
+sim__proactive__terminal_response_ft proactive_app_default__terminal_response;

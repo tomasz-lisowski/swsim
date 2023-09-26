@@ -870,13 +870,26 @@ static swicc_ret_et apduh_etsi_cat_terminal_response(
     }
 
     swsim_st *const swsim_state = swicc_state->userdata;
+
+    /* Copy response into the proactive struct. */
+    memcpy(swsim_state->proactive.response, cmd->data->b, cmd->data->len);
+    swsim_state->proactive.response_length = cmd->data->len;
     if (swsim_state->proactive.app_default_response_wait)
     {
         /* Give response to default app. */
-        swsim_state->proactive.app_default_response_wait = false;
         /**
-         * TODO: Copy resoonse to struct.
+         * TODO: Handle the return and indicate it to the terminal.
          */
+        proactive_app_default__terminal_response(&swsim_state->proactive);
+    }
+    else if (swsim_state->proactive.app_proprietary_response_wait)
+    {
+        /* Give response to proprietary app. */
+        /**
+         * TODO: Handle the return and indicate it to the terminal.
+         */
+        swsim_state->proactive.app_proprietary__terminal_response(
+            &swsim_state->proactive);
     }
     else
     {
@@ -925,6 +938,26 @@ static swicc_ret_et apduh_etsi_cat_envelope(swicc_st *const swicc_state,
     swsim_st *const swsim_state = swicc_state->userdata;
     swsim_state->proactive.envelope_length = cmd->data->len;
     memcpy(swsim_state->proactive.envelope, cmd->data->b, cmd->data->len);
+
+    swicc_ret_et ret_envelope = SWICC_RET_SUCCESS;
+    if (swsim_state->proactive.app_default_enable)
+    {
+        ret_envelope = proactive_app_default__envelope(&swsim_state->proactive);
+    }
+    else if (swsim_state->proactive.app_proprietary_enable &&
+             swsim_state->proactive.app_proprietary__envelope != NULL)
+    {
+        ret_envelope = swsim_state->proactive.app_proprietary__envelope(
+            &swsim_state->proactive);
+    }
+
+    if (ret_envelope != SWICC_RET_SUCCESS)
+    {
+        /**
+         * TODO: ALLow envelope handlers to return data from this command by
+         * writing into the "command" member of the proactive struct.
+         */
+    }
 
     /**
      * TODO: Return the BER-TLV object described in ETSI TS 102 223.
@@ -1033,6 +1066,13 @@ static swicc_ret_et apduh_3gpp_status(swicc_st *const swicc_state,
             if (buf_select_len == *cmd->p3)
             {
                 SWICC_APDUH_RES(res, SWICC_APDU_SW1_NORM_NONE, 0U, *cmd->p3);
+                return SWICC_RET_SUCCESS;
+            }
+            else if (*cmd->p3 == 0)
+            {
+                // Not sure about this one. Is this valid?
+                SWICC_APDUH_RES(res, SWICC_APDU_SW1_NORM_BYTES_AVAILABLE,
+                                (uint8_t)buf_select_len, *cmd->p3);
                 return SWICC_RET_SUCCESS;
             }
             else
@@ -1777,7 +1817,7 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
 
     /* Run proactive applications. */
     swsim_st *sim_state = swicc_state->userdata;
-    sim_proactive_step(sim_state);
+    proactive_step(&sim_state->proactive);
     if (ret == SWICC_RET_SUCCESS)
     {
         if (res->sw1 == SWICC_APDU_SW1_NORM_NONE && res->sw2 == 0)
