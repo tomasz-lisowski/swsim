@@ -18,11 +18,13 @@ MAIN_CC_FLAGS:=\
 	-Wno-unused-parameter \
 	-Wconversion \
 	-Wshadow \
+	-static \
+	-fPIC \
 	-O2 \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_LIB)/swicc/include \
 	-L$(DIR_LIB)/swicc/build \
-	-lswicc \
+	-Wl,-whole-archive -lswicc -Wl,-no-whole-archive \
 	$(ARG)
 MAIN_SWICC_TARGET:=main
 MAIN_SWICC_ARG:=$(ARG_SWICC)
@@ -54,14 +56,14 @@ TEST_CC_FLAGS:=\
 all: main test
 .PHONY: all
 
-main: $(DIR_BUILD) $(DIR_BUILD)/$(MAIN_NAME) $(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN)
+main: $(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN) $(DIR_BUILD)/$(LIB_PREFIX)$(MAIN_NAME).$(EXT_LIB_STATIC)
 main-dbg: MAIN_SWICC_TARGET:=main-dbg
 main-dbg: MAIN_SWICC_ARG+=-fsanitize=address
 main-dbg: MAIN_CC_FLAGS+=-g -fsanitize=address -DDEBUG
 main-dbg: main
 .PHONY: main main-dbg
 
-test: $(DIR_BUILD) $(DIR_BUILD)/$(TEST_NAME) $(DIR_BUILD)/$(TEST_NAME).$(EXT_BIN)
+test: $(DIR_BUILD)/$(TEST_NAME).$(EXT_BIN)
 test-dbg: MAIN_SWICC_TARGET:=main-dbg
 test-dbg: MAIN_SWICC_ARG+=-fsanitize=address
 test-dbg: TEST_CC_FLAGS+=-g -DDEBUG
@@ -69,11 +71,17 @@ test-dbg: test
 .PHONY: test test-dbg
 
 # Build swSIM.
-$(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN): $(DIR_LIB)/swicc/build/$(LIB_PREFIX)swicc.$(EXT_LIB_STATIC) $(MAIN_OBJ)
+$(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN): $(DIR_BUILD) $(DIR_BUILD)/$(MAIN_NAME) $(DIR_LIB)/swicc/build/$(LIB_PREFIX)swicc.$(EXT_LIB_STATIC) $(MAIN_OBJ)
 	$(CC) $(MAIN_OBJ) -o $(@) $(MAIN_CC_FLAGS)
 
+# Build libswSIM.
+$(DIR_BUILD)/$(LIB_PREFIX)$(MAIN_NAME).$(EXT_LIB_STATIC): $(DIR_BUILD) $(DIR_BUILD)/swicc $(DIR_LIB)/swicc/build/$(LIB_PREFIX)swicc.$(EXT_LIB_STATIC) $(MAIN_OBJ)
+	cd $(DIR_BUILD)/swicc && $(AR) -x ../../$(DIR_LIB)/swicc/build/$(LIB_PREFIX)swicc.$(EXT_LIB_STATIC)
+	$(AR) rcs $(@) $(MAIN_OBJ) $(DIR_BUILD)/swicc/*
+	$(AR) dv $(@) main.o
+
 # Create the test binary.
-$(DIR_BUILD)/$(TEST_NAME).$(EXT_BIN): $(DIR_LIB)/swicc/build/$(LIB_PREFIX)swicc.$(EXT_LIB_STATIC) $(TEST_OBJ)
+$(DIR_BUILD)/$(TEST_NAME).$(EXT_BIN): $(DIR_BUILD) $(DIR_BUILD)/$(TEST_NAME) $(DIR_LIB)/swicc/build/$(LIB_PREFIX)swicc.$(EXT_LIB_STATIC) $(TEST_OBJ)
 	$(CC) $(TEST_OBJ) -o $(@) $(TEST_CC_FLAGS)
 
 # Build swICC.
@@ -90,7 +98,7 @@ $(DIR_BUILD)/$(DIR_TEST)/%.o: $(DIR_TEST)/$(DIR_SRC)/%.c
 -include $(MAIN_DEP)
 -include $(TEST_DEP)
 
-$(DIR_BUILD) $(DIR_BUILD)/$(MAIN_NAME) $(DIR_BUILD)/$(DIR_TEST):
+$(DIR_BUILD) $(DIR_BUILD)/$(MAIN_NAME) $(DIR_BUILD)/$(DIR_TEST) $(DIR_BUILD)/swicc $(DIR_BUILD)/swicc/dbg $(DIR_BUILD)/swicc/fs:
 	$(call pal_mkdir,$(@))
 clean:
 	$(call pal_rmdir,$(DIR_BUILD))
