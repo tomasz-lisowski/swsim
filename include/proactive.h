@@ -848,6 +848,22 @@ typedef struct swsim__proactive__tlv__capability_configuration_parameters_s
     uint8_t const *capability_configuration_parameters;
 } swsim__proactive__tlv__capability_configuration_parameters_st;
 
+/* ETSI TS 102 223 V17.2.0 clause.8.13. */
+typedef struct swsim__proactive__tlv__3gpp_sms_tpdu_s
+{
+    bool valid;
+    uint8_t sms_tpdu_length;
+    uint8_t const *sms_tpdu;
+} swsim__proactive__tlv__3gpp_sms_tpdu_st;
+
+/* ETSI TS 102 223 V17.2.0 clause.8.71. */
+typedef struct swsim__proactive__tlv__cdma_sms_tpdu_s
+{
+    bool valid;
+    uint8_t sms_tpdu_length;
+    uint8_t const *sms_tpdu;
+} swsim__proactive__tlv__cdma_sms_tpdu_st;
+
 /* ETSI TS 102 223 V17.2.0 clause.6.6.1. */
 typedef struct swsim__proactive__command__display_text_s
 {
@@ -978,6 +994,30 @@ typedef struct swsim__proactive__command__set_up_call_s
     /* clang-format on */
 } swsim__proactive__command__set_up_call_st;
 
+typedef enum swsim__proactive__command__send_short_message__sms_tpdu__type_e
+{
+    SWSIM__PROACTIVE__COMMAND__SEND_SHORT_MESSAGE__SMS_TPDU__TYPE__3GPP,
+    SWSIM__PROACTIVE__COMMAND__SEND_SHORT_MESSAGE__SMS_TPDU__TYPE__CDMA,
+} swsim__proactive__command__send_short_message__sms_tpdu__type_et;
+/* ETSI TS 102 223 V17.2.0 clause.6.6.9. */
+typedef struct swsim__proactive__command__send_short_message_s
+{
+    /* clang-format off */
+    swsim__proactive__tlv__alpha_identifier_st alpha_identifier;
+    swsim__proactive__tlv__address_st address;
+
+    swsim__proactive__command__send_short_message__sms_tpdu__type_et sms_tpdu_type;
+    union {
+        swsim__proactive__tlv__3gpp_sms_tpdu_st o3gpp;
+        swsim__proactive__tlv__cdma_sms_tpdu_st cdma;
+    } sms_tpdu;
+
+    swsim__proactive__tlv__icon_identifier_st icon_identifier;
+    swsim__proactive__tlv__text_attribute_st text_attribute;
+    swsim__proactive__tlv__frame_identifier_st frame_identifier;
+    /* clang-format on */
+} swsim__proactive__command__send_short_message_st;
+
 typedef struct swsim__proactive__command_s
 {
     /**
@@ -997,6 +1037,7 @@ typedef struct swsim__proactive__command_s
         swsim__proactive__command__play_tone_st play_tone;
         swsim__proactive__command__open_channel_st open_channel;
         swsim__proactive__command__set_up_call_st set_up_call;
+        swsim__proactive__command__send_short_message_st send_short_message;
     };
 } swsim__proactive__command_st;
 
