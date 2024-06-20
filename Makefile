@@ -49,7 +49,6 @@ TEST_CC_FLAGS:=\
 	-L$(DIR_LIB)/swicc/build \
 	-L$(DIR_BUILD) \
 	-lswicc \
-	-fsanitize=address \
 	$(ARG)
 
 all: main test
@@ -65,7 +64,7 @@ main-dbg: main
 test: $(DIR_BUILD)/$(TEST_NAME).$(EXT_BIN)
 test-dbg: MAIN_SWICC_TARGET:=main-dbg
 test-dbg: MAIN_SWICC_ARG+=-fsanitize=address
-test-dbg: TEST_CC_FLAGS+=-g -DDEBUG
+test-dbg: TEST_CC_FLAGS+=-g -DDEBUG -fsanitize=address
 test-dbg: test
 .PHONY: test test-dbg
 
