@@ -3,7 +3,7 @@ name: Test on Linux distros
 on: [push]
 
 jobs:
-  arch-20221120:
+  arch-20230122:
     name: Arch 20230122.0.120412
     runs-on: ubuntu-latest
     container:
