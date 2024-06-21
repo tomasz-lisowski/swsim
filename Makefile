@@ -18,8 +18,8 @@ MAIN_CC_FLAGS:=\
 	-Wno-unused-parameter \
 	-Wconversion \
 	-Wshadow \
-	-fPIC \
 	-O2 \
+	-fPIC \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_LIB)/swicc/include \
 	-L$(DIR_LIB)/swicc/build \
@@ -41,6 +41,7 @@ TEST_CC_FLAGS:=\
 	-Wconversion \
 	-Wshadow \
 	-O2 \
+	-fPIC \
 	-I$(DIR_INCLUDE) \
 	-I. \
 	-I$(DIR_LIB)/swicc/include \
@@ -59,14 +60,20 @@ main-dbg: MAIN_SWICC_TARGET:=main-dbg
 main-dbg: MAIN_SWICC_ARG+=-fsanitize=address
 main-dbg: MAIN_CC_FLAGS+=-g -fsanitize=address -DDEBUG
 main-dbg: main
-.PHONY: main main-dbg
+main-static: MAIN_SWICC_TARGET:=main-static
+main-static: MAIN_CC_FLAGS+=-static
+main-static: main
+.PHONY: main main-dbg main-static
 
 test: $(DIR_BUILD)/$(TEST_NAME).$(EXT_BIN)
 test-dbg: MAIN_SWICC_TARGET:=main-dbg
 test-dbg: MAIN_SWICC_ARG+=-fsanitize=address
 test-dbg: TEST_CC_FLAGS+=-g -DDEBUG -fsanitize=address
 test-dbg: test
-.PHONY: test test-dbg
+test-static: MAIN_SWICC_TARGET:=main-static
+test-static: TEST_CC_FLAGS+=-static
+test-static: test
+.PHONY: test test-dbg test-static
 
 # Build swSIM.
 $(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN): $(DIR_BUILD) $(DIR_BUILD)/$(MAIN_NAME) $(DIR_LIB)/swicc/build/$(LIB_PREFIX)swicc.$(EXT_LIB_STATIC) $(MAIN_OBJ)
