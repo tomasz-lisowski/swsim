@@ -1,12 +1,16 @@
-# Compiler output
+# Compiler output.
 build/
 build-lib/
 
-# Clangd config
+# Clangd config.
 compile_flags.txt
 
-# swICC FS Disk
+# swICC FS Disk.
 *.swiccfs
 
-# Logs
+# Logs.
 *.log
+
+# Docker output.
+docker/
+docker.log

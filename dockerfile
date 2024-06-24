@@ -1,11 +1,9 @@
-# docker build --progress=plain . -t tomasz-lisowski/swsim:1.0.0 2>&1 | tee build.log;
-# docker run -v ./build:/opt/swsim/build/host --tty --rm tomasz-lisowski/swsim:1.0.0;
-
 FROM ubuntu:22.04 AS base
 
 RUN set -eux; \
     apt-get -qq update; \
     apt-get -qq --yes dist-upgrade;
+
 
 FROM base AS base__swicc
 COPY . /opt/swsim
@@ -17,6 +15,14 @@ RUN set -eux; \
     make -j $(nproc) main-static test-static; \
     apt-get -qq --yes purge ${DEP};
 
+
 FROM base
-COPY --from=base__swicc /opt/swsim/build /opt/swsim/build/local
-ENTRYPOINT [ "/bin/bash", "-c", "(cp -r /opt/swsim/build/local/*.a /opt/swsim/build/host) && (cp -r /opt/swsim/build/local/*.elf /opt/swsim/build/host)" ]
+COPY --from=base__swicc /opt/swsim/build /opt/swsim/build
+COPY --from=base__swicc /opt/swsim/data /opt/swsim/data
+
+RUN set -eux; \
+    rm -r /opt/swsim/build/swsim; \
+    rm -r /opt/swsim/build/swicc; \
+    rm -r /opt/swsim/build/test;
+
+ENTRYPOINT [ "bash", "-c", "cp -r /opt/swsim/* /opt/out" ]
