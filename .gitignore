@@ -12,5 +12,4 @@ compile_flags.txt
 *.log
 
 # Docker output.
-docker/
 docker.log
