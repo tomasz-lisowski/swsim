@@ -699,6 +699,12 @@ static swicc_ret_et apduh_3gpp_select(swicc_st *const swicc_state,
             static_assert(
                 SWICC_DATA_MAX == SWICC_DATA_MAX_SHRT,
                 "Response buffer length might not fit in SW2 if SW1 is 0x61");
+            if (swicc_state->fs.va.cur_tree == NULL)
+            {
+                // When no tree is selected, this is not allowed.
+                SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_CMD, 0U, 0U);
+                return SWICC_RET_SUCCESS;
+            }
 
             /* The file that was requested to be selected. */
             swicc_fs_file_st *const file_selected =
@@ -1053,6 +1059,12 @@ static swicc_ret_et apduh_3gpp_status(swicc_st *const swicc_state,
         SWICC_APDUH_RES(res, SWICC_APDU_SW1_NORM_NONE, 0U, SWICC_FS_NAME_LEN);
         return SWICC_RET_SUCCESS;
     case DATA_REQ_SELECT: {
+        if (swicc_state->fs.va.cur_tree_adf == NULL)
+        {
+            // When no tree is selected, this is not allowed.
+            SWICC_APDUH_RES(res, SWICC_APDU_SW1_CHER_CMD, 0U, 0U);
+            return SWICC_RET_SUCCESS;
+        }
         memset(res->data.b, 0xFF, *cmd->p3);
         swicc_fs_file_st *const file_selected = &swicc_state->fs.va.cur_adf;
         uint16_t buf_select_len = sizeof(res->data.b);
