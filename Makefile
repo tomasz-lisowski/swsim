@@ -57,8 +57,7 @@ all: main test
 
 main: $(DIR_BUILD)/$(MAIN_NAME).$(EXT_BIN) $(DIR_BUILD)/$(LIB_PREFIX)$(MAIN_NAME).$(EXT_LIB_STATIC)
 main-dbg: MAIN_SWICC_TARGET:=main-dbg
-main-dbg: MAIN_SWICC_ARG+=-fsanitize=address
-main-dbg: MAIN_CC_FLAGS+=-g -fsanitize=address -DDEBUG
+main-dbg: MAIN_CC_FLAGS+=-g -DDEBUG
 main-dbg: main
 main-static: MAIN_SWICC_TARGET:=main-static
 main-static: MAIN_CC_FLAGS+=-static
