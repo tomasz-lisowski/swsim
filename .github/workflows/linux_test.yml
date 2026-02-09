@@ -3,11 +3,11 @@ name: Test on Linux distros
 on: [push]
 
 jobs:
-  arch-20230122:
-    name: Arch 20230122.0.120412
+  arch-20260201:
+    name: Arch 20260201.0.486523
     runs-on: ubuntu-latest
     container:
-      image: docker://archlinux:base-devel-20230122.0.120412
+      image: docker://archlinux:base-20260201.0.486523
 
     steps:
       - name: Pacman Update
@@ -42,11 +42,11 @@ jobs:
           sleep 4s
           (./build/swsim.elf -f ./out.swiccfs -g ./data/gsm.json) || code=$?; if [ $code -ne 2 ]; then exit $code; fi
 
-  debian-11:
-    name: Debian 11
+  debian-12_13:
+    name: Debian 12.13
     runs-on: ubuntu-latest
     container:
-      image: docker://debian:bullseye
+      image: docker://debian:12.13
 
     steps:
       - name: APT Update
@@ -55,6 +55,78 @@ jobs:
       - name: Install Deps
         run: |
           apt-get -qq -y install git make cmake gcc
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+      - name: Checkout
+        run: |
+          git clone --recurse-submodules git@github.com:${{ github.repository }}.git repo
+      - name: Compile
+        run: |
+          cd repo
+          make main-dbg
+      - name: Compile Server Dummy
+        run: |
+          cd repo/lib/swicc/tool/server-dummy
+          make
+      - name: Run swSIM
+        run: |
+          cd repo
+          cd ./lib/swicc/tool/server-dummy && ./build/server-dummy.elf 37324 example.txt &
+          sleep 4s
+          (./build/swsim.elf -f ./out.swiccfs -g ./data/gsm.json) || code=$?; if [ $code -ne 2 ]; then exit $code; fi
+
+  debian-11_11:
+    name: Debian 11.11
+    runs-on: ubuntu-latest
+    container:
+      image: docker://debian:11.11
+
+    steps:
+      - name: APT Update
+        run: |
+          apt-get -qq update
+      - name: Install Deps
+        run: |
+          apt-get -qq -y install git make cmake gcc
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+      - name: Checkout
+        run: |
+          git clone --recurse-submodules git@github.com:${{ github.repository }}.git repo
+      - name: Compile
+        run: |
+          cd repo
+          make main-dbg
+      - name: Compile Server Dummy
+        run: |
+          cd repo/lib/swicc/tool/server-dummy
+          make
+      - name: Run swSIM
+        run: |
+          cd repo
+          cd ./lib/swicc/tool/server-dummy && ./build/server-dummy.elf 37324 example.txt &
+          sleep 4s
+          (./build/swsim.elf -f ./out.swiccfs -g ./data/gsm.json) || code=$?; if [ $code -ne 2 ]; then exit $code; fi
+
+  fedora-43:
+    name: Fedora 43
+    runs-on: ubuntu-latest
+    container:
+      image: docker://fedora:43
+
+    steps:
+      - name: DNF Update
+        run: |
+          dnf -q check-update || code=$?; if [ $code -ne 0 or $code -ne 100 ]; then exit $code; fi
+      - name: Install Deps
+        run: |
+          dnf -q -y install git make cmake gcc libasan
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
