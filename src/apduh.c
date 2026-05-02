@@ -1836,11 +1836,6 @@ swicc_ret_et sim_apduh_demux(swicc_st *const swicc_state,
         {
             if (sim_state->proactive.command_length > 0)
             {
-                fprintf(
-                    stderr,
-                    "Proactive command present, overwriting status 9000 to 91%02X len=0x%04X.\n",
-                    (uint8_t)sim_state->proactive.command_length,
-                    sim_state->proactive.command_length);
                 res->sw1 = 0x91;
                 static_assert(
                     sizeof(sim_state->proactive.command) == 256,
