@@ -18,7 +18,8 @@ jobs:
           pacman -Syu --noconfirm
       - name: Install Deps
         run: |
-          pacman -S --noconfirm openssh git make cmake gcc
+          pacman -S --noconfirm openssh git make cmake gcc15
+          ln -s /usr/bin/gcc-15 /usr/bin/gcc
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
@@ -42,47 +43,11 @@ jobs:
           sleep 4s
           (./build/swsim.elf -f ./out.swiccfs -g ./data/gsm.json) || code=$?; if [ $code -ne 2 ]; then exit $code; fi
 
-  debian-12_13:
-    name: Debian 12.13
+  debian-12_15:
+    name: Debian 12.15
     runs-on: ubuntu-latest
     container:
-      image: docker://debian:12.13
-
-    steps:
-      - name: APT Update
-        run: |
-          apt-get -qq update
-      - name: Install Deps
-        run: |
-          apt-get -qq -y install git make cmake gcc
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          known_hosts: ${{ secrets.KNOWN_HOSTS }}
-      - name: Checkout
-        run: |
-          git clone --recurse-submodules git@github.com:${{ github.repository }}.git repo
-      - name: Compile
-        run: |
-          cd repo
-          make main-dbg
-      - name: Compile Server Dummy
-        run: |
-          cd repo/lib/swicc/tool/server-dummy
-          make
-      - name: Run swSIM
-        run: |
-          cd repo
-          cd ./lib/swicc/tool/server-dummy && ./build/server-dummy.elf 37324 example.txt &
-          sleep 4s
-          (./build/swsim.elf -f ./out.swiccfs -g ./data/gsm.json) || code=$?; if [ $code -ne 2 ]; then exit $code; fi
-
-  debian-11_11:
-    name: Debian 11.11
-    runs-on: ubuntu-latest
-    container:
-      image: docker://debian:11.11
+      image: docker://debian:12.15
 
     steps:
       - name: APT Update
