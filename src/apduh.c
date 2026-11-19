@@ -198,7 +198,7 @@ static swicc_ret_et apduh_gsm_bin_read(swicc_st *const swicc_state,
         return SWICC_RET_SUCCESS;
     }
 
-    uint8_t const len_expected = *cmd->p3;
+    uint16_t const len_expected = *cmd->p3 == 0 ? 256 : *cmd->p3;
     uint8_t const offset_hi = cmd->hdr->p1;
     uint8_t const offset_lo = cmd->hdr->p2;
     /* Safe cast as just concatenating the two offset bytes. */
@@ -220,7 +220,7 @@ static swicc_ret_et apduh_gsm_bin_read(swicc_st *const swicc_state,
             res->data.len = 0U;
             return SWICC_RET_SUCCESS;
         }
-        else if (offset + len_expected > file->data_size)
+        else if ((uint32_t)offset + (uint32_t)len_expected > file->data_size)
         {
             res->sw1 =
                 SWICC_APDU_SW1_CHER_P1P2; /* "Incorrect parameter P1 or P2." */
